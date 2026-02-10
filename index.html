@@ -2,776 +2,546 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi Inventory BlueTech</title>
-    
-    <!-- Library Scanner (Wajib agar scan berfungsi) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sistem Inventory Live</title>
+    <!-- Library Barcode Scanner -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-
     <style>
+        /* --- STYLES --- */
         :root {
-            --primary-blue: #1565C0; /* Biru Tua Elegan */
-            --secondary-blue: #42A5F5; /* Biru Terang */
-            --bg-color: #F0F4F8;
-            --text-color: #333;
-            --white: #ffffff;
-            --success: #2E7D32;
-            --danger: #C62828;
-            --border-radius: 8px;
-            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+            --primary: #0056b3; --secondary: #007bff; --bg: #f4f7f6;
+            --white: #fff; --text: #333; --border: #ced4da;
+            --danger: #dc3545; --success: #28a745;
         }
-
-        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background: var(--bg); color: var(--text); padding-bottom: 70px; }
         
-        body { margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-color); padding-bottom: 60px; }
-
-        /* --- Header & Navigasi --- */
-        header {
-            background-color: var(--primary-blue);
-            color: var(--white);
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: var(--shadow);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        h1 { margin: 0; font-size: 1.2rem; font-weight: 600; }
-
-        .menu-container { position: relative; }
-
-        .menu-btn {
-            background: none; border: none; cursor: pointer;
-            display: flex; flex-direction: column; gap: 4px;
-            padding: 5px;
-        }
-
-        .menu-bar { width: 25px; height: 3px; background-color: var(--white); border-radius: 2px; }
-
-        .dropdown-menu {
-            display: none;
-            position: absolute;
-            top: 100%; right: 0;
-            background-color: var(--white);
-            min-width: 200px;
-            box-shadow: var(--shadow);
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            z-index: 1001;
-            margin-top: 10px;
-        }
-
-        .dropdown-menu.active { display: block; animation: fadeIn 0.2s ease; }
-
-        .dropdown-item {
-            padding: 12px 20px;
-            cursor: pointer;
-            color: var(--text-color);
-            text-decoration: none;
-            display: block;
-            transition: background 0.2s;
-        }
-
-        .dropdown-item:hover { background-color: var(--secondary-blue); color: var(--white); }
-        .dropdown-item.divider { border-top: 1px solid #eee; }
-
-        /* --- Layout Umum --- */
-        main { padding: 20px; max-width: 800px; margin: 0 auto; }
-
-        section { display: none; animation: fadeIn 0.3s ease-in-out; }
-        section.active { display: block; }
-
-        .card {
-            background: var(--white);
-            padding: 20px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 20px;
-        }
-
-        .form-group { margin-bottom: 15px; }
+        /* Header */
+        header { background: var(--primary); color: var(--white); padding: 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .menu-btn { background: none; border: none; cursor: pointer; padding: 5px; }
         
-        label { display: block; margin-bottom: 5px; font-weight: 500; color: #555; font-size: 0.9rem; }
+        /* Nav */
+        .nav-drawer { position: fixed; top: 0; right: -260px; width: 260px; height: 100%; background: var(--white); box-shadow: -2px 0 5px rgba(0,0,0,0.2); transition: 0.3s; z-index: 101; padding-top: 20px; overflow-y: auto; }
+        .nav-drawer.open { right: 0; }
+        .nav-item { display: block; padding: 15px 20px; text-decoration: none; color: var(--text); border-bottom: 1px solid #eee; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; display: none; }
+        .overlay.open { display: block; }
+
+        /* Container */
+        .container { max-width: 600px; margin: 15px auto; padding: 0 15px; }
+        .section { display: none; }
+        .section.active { display: block; }
         
-        input, select, textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: var(--border-radius);
-            font-size: 1rem;
-            transition: border 0.2s;
-        }
+        /* Card */
+        .card { background: var(--white); border-radius: 8px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card-header { font-weight: 600; color: var(--primary); margin-bottom: 15px; border-bottom: 2px solid var(--bg); padding-bottom: 10px; }
 
-        input:focus, select:focus, textarea:focus {
-            border-color: var(--primary-blue);
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(21, 101, 192, 0.2);
-        }
+        /* Forms */
+        .form-group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 5px; font-size: 0.85rem; color: #555; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 1rem; }
+        input:focus { border-color: var(--secondary); outline: none; }
+        input:disabled { background: #eee; }
 
-        input:disabled, select:disabled, textarea:disabled {
-            background-color: #eee;
-            cursor: not-allowed;
-        }
-
-        /* --- Tombol --- */
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: var(--border-radius);
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            transition: opacity 0.2s, transform 0.1s;
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn:active { transform: scale(0.98); }
-        .btn-primary { background-color: var(--primary-blue); color: var(--white); }
-        .btn-success { background-color: var(--success); color: var(--white); }
-        .btn-danger { background-color: var(--danger); color: var(--white); }
-        .btn-secondary { background-color: #757575; color: var(--white); margin-top: 10px; }
-
-        /* --- Khusus Layar Utama (Scan) --- */
-        .scan-area { text-align: center; padding: 20px 0; }
-        .scan-btn-large {
-            width: 120px; height: 120px;
-            border-radius: 50%;
-            background-color: var(--primary-blue);
-            color: white;
-            font-size: 3rem;
-            border: none;
-            box-shadow: 0 8px 15px rgba(21, 101, 192, 0.3);
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 0 auto 20px;
-            transition: transform 0.2s;
-        }
-        .scan-btn-large:hover { transform: scale(1.05); background-color: var(--secondary-blue); }
+        /* Buttons */
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-size: 1rem; color: white; cursor: pointer; margin-top: 5px; }
+        .btn-primary { background: var(--primary); }
+        .btn-success { background: var(--success); }
+        .btn-danger { background: var(--danger); }
         
-        /* Area kamera */
-        #reader {
-            width: 100%;
-            max-width: 500px;
-            margin: 0 auto 20px;
-            display: none; /* Hidden default */
-            border: 2px solid var(--primary-blue);
-            border-radius: var(--border-radius);
-            overflow: hidden;
-        }
+        /* Scanner */
+        #reader { width: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 15px; display: none; }
+        #reader.active { display: block; }
+        .scan-result-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #eee; }
+        .photo-thumb { width: 80px; height: 80px; object-fit: cover; border: 1px solid #ddd; border-radius: 4px; display: block; margin-top: 5px; }
         
-        .result-display {
-            margin-top: 20px;
-            text-align: left;
-            border-top: 2px dashed #ddd;
-            padding-top: 20px;
-            display: none; /* Hidden by default */
-        }
-        
-        .result-row { display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid #f0f0f0; padding-bottom: 4px; }
-        .result-label { font-weight: bold; color: var(--primary-blue); }
-        .result-value { font-weight: 500; }
-        .result-img { max-width: 100px; max-height: 100px; border-radius: 4px; margin-top: 10px; display: block; }
-
-        .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-
-        /* --- Toast Notification --- */
-        #toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 2000; }
-        .toast {
-            background-color: #323232; color: white;
-            padding: 12px 24px; border-radius: 50px;
-            margin-top: 10px; opacity: 0;
-            transition: opacity 0.3s;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            text-align: center;
-        }
-        .toast.show { opacity: 1; }
-        .toast.success { background-color: var(--success); }
-        .toast.error { background-color: var(--danger); }
-
-        /* Animasi */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Responsive adjustments */
-        @media (max-width: 600px) {
-            .action-buttons { grid-template-columns: 1fr; }
-        }
+        /* Toast */
+        #toast { visibility: hidden; min-width: 250px; background: #333; color: #fff; text-align: center; border-radius: 4px; padding: 16px; position: fixed; z-index: 200; left: 50%; bottom: 30px; transform: translateX(-50%); }
+        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
     </style>
 </head>
 <body>
 
-    <!-- Navigasi -->
-    <header>
-        <h1>BlueTech Inventory</h1>
-        <div class="menu-container">
-            <button class="menu-btn" onclick="toggleMenu()">
-                <div class="menu-bar"></div>
-                <div class="menu-bar"></div>
-                <div class="menu-bar"></div>
-            </button>
-            <div class="dropdown-menu" id="mainMenu">
-                <a href="#" class="dropdown-item" onclick="navTo('beranda')">Beranda</a>
-                <a href="#" class="dropdown-item" onclick="navTo('data-barang')">Data Barang</a>
-                <a href="#" class="dropdown-item" onclick="navTo('data-harga')">Data Harga</a>
-                <a href="#" class="dropdown-item" onclick="navTo('data-inventory')">Data Inventory</a>
-                <a href="#" class="dropdown-item" onclick="navTo('pengaturan')">Pengaturan</a>
-                <div class="dropdown-item divider"></div>
-                <a href="#" class="dropdown-item" onclick="keluarApp()" style="color: var(--danger);">Keluar</a>
+<!-- HEADER -->
+<header>
+    <span>Inventory App</span>
+    <button class="menu-btn" onclick="toggleMenu()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+    </button>
+</header>
+
+<!-- NAVIGATION -->
+<div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+<div class="nav-drawer" id="navDrawer">
+    <a href="#" class="nav-item" onclick="nav('home')">Beranda</a>
+    <a href="#" class="nav-item" onclick="nav('barang')">Data Barang</a>
+    <a href="#" class="nav-item" onclick="nav('harga')">Data Harga</a>
+    <a href="#" class="nav-item" onclick="nav('inventory')">Data Inventory</a>
+    <a href="#" class="nav-item" onclick="nav('setting')">Pengaturan</a>
+    <div style="border-top:1px solid #eee; margin: 10px 0;"></div>
+    <a href="#" class="nav-item" style="color:red;" onclick="window.close()">Keluar</a>
+</div>
+
+<!-- MAIN -->
+<main class="container">
+
+    <!-- 1. BERANDA (SCAN) -->
+    <section id="home" class="section active">
+        <div class="card" style="text-align: center;">
+            <div class="card-header">Scan Transaksi</div>
+            <div id="reader"></div>
+            <button id="scanBtn" class="btn btn-primary" onclick="toggleScan()">MULAI SCAN KAMERA</button>
+            
+            <div id="scanData" style="display:none; margin-top: 20px; text-align: left;">
+                <div class="scan-result-item"><strong>Kode:</strong> <span id="sKode"></span></div>
+                <div class="scan-result-item"><strong>Nama:</strong> <span id="sNama"></span></div>
+                <div class="scan-result-item"><strong>Harga:</strong> <span id="sHarga"></span></div>
+                <div class="scan-result-item"><strong>Stok:</strong> <span id="sStok"></span></div>
+                <img id="sPhoto" class="photo-thumb" style="margin: 0 auto; display: none;">
+                
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button class="btn btn-danger" onclick="resetScan()">BATAL</button>
+                    <button class="btn btn-success" onclick="doTransaction()">TRANSAKSI</button>
+                </div>
             </div>
         </div>
-    </header>
+    </section>
 
-    <main>
-        <!-- 1. Layar Utama (Beranda) -->
-        <section id="beranda" class="active">
-            <div class="card">
-                <div class="scan-area">
-                    <h2>Scan Transaksi</h2>
-                    <p style="color:#666;">Klik tombol scan untuk memulai kamera</p>
-                    
-                    <!-- Tombol Scan -->
-                    <button class="scan-btn-large" onclick="startScan()" title="Scan Barcode" id="btn-scan-trigger">
-                        <span>📷</span>
-                    </button>
-                    
-                    <!-- Area Kamera (Dibuat visible saat scanning) -->
-                    <div id="reader"></div>
-
-                    <div id="scan-status" style="font-size: 0.9rem; color: var(--primary-blue); min-height: 1.2em;"></div>
-                    
-                    <!-- Tombol Stop Kamera (Muncul hanya saat scanning) -->
-                    <button id="btn-stop-scan" class="btn btn-danger" onclick="stopScan()" style="display:none; margin-top:10px; max-width:200px; margin-left:auto; margin-right:auto;">
-                        Tutup Kamera
-                    </button>
-                </div>
-
-                <!-- Area Hasil Scan -->
-                <div id="scan-result" class="result-display">
-                    <h3 style="margin-top:0; border-bottom: 2px solid var(--primary-blue); padding-bottom: 10px; color: var(--primary-blue);">Detail Barang</h3>
-                    
-                    <div class="result-row"><span class="result-label">KODE:</span> <span class="result-value" id="res-kode">-</span></div>
-                    <div class="result-row"><span class="result-label">NAMA:</span> <span class="result-value" id="res-nama">-</span></div>
-                    <div class="result-row"><span class="result-label">KELOMPOK:</span> <span class="result-value" id="res-kelompok">-</span></div>
-                    <div class="result-row"><span class="result-label">JENIS:</span> <span class="result-value" id="res-jenis">-</span></div>
-                    <div class="result-row"><span class="result-label">WARNA:</span> <span class="result-value" id="res-warna">-</span></div>
-                    <div class="result-row"><span class="result-label">UKURAN:</span> <span class="result-value" id="res-ukuran">-</span></div>
-                    <div class="result-row"><span class="result-label">STOK:</span> <span class="result-value" id="res-stok">-</span></div>
-                    <div class="result-row" style="background-color: #e3f2fd; padding: 5px; border-radius: 4px;">
-                        <span class="result-label">HARGA JUAL:</span> <span class="result-value" id="res-harga" style="color: var(--success);">Rp 0</span>
-                    </div>
-                    
-                    <img id="res-photo" class="result-img" src="" alt="Photo Barang" style="display:none;">
-
-                    <div class="action-buttons">
-                        <button class="btn btn-danger" onclick="cancelTransaction()">CANCEL</button>
-                        <button class="btn btn-success" onclick="processTransaction()">TRANSAKSI (BELI)</button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 2. Layar Data Barang -->
-        <section id="data-barang">
-            <div class="card">
-                <h2 style="color: var(--primary-blue);">Input Data Barang</h2>
-                <form id="form-barang" onsubmit="simpanBarang(event)">
-                    <div class="form-group">
-                        <label for="b-kode">KODE *</label>
-                        <input type="text" id="b-kode" required placeholder="Ketik Kode..." oninput="autoFillBarang('kode')">
-                    </div>
-                    <div class="form-group">
-                        <label for="b-nama">NAMA *</label>
-                        <input type="text" id="b-nama" required placeholder="Ketik Nama..." oninput="autoFillBarang('nama')">
-                    </div>
-                    <div class="form-group">
-                        <label for="b-kelompok">KELOMPOK</label>
-                        <input type="text" id="b-kelompok">
-                    </div>
-                    <div class="form-group">
-                        <label for="b-jenis">JENIS</label>
-                        <input type="text" id="b-jenis">
-                    </div>
-                    <div class="form-group">
-                        <label for="b-warna">WARNA</label>
-                        <input type="text" id="b-warna">
-                    </div>
-                    <div class="form-group">
-                        <label for="b-ukuran">UKURAN</label>
-                        <input type="text" id="b-ukuran">
-                    </div>
-                    <div class="form-group">
-                        <label for="b-catatan">CATATAN</label>
-                        <textarea id="b-catatan" rows="2"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="b-mediasosial">MEDSOS</label>
-                        <input type="text" id="b-mediasosial">
-                    </div>
-                    <div class="form-group">
-                        <label for="b-photo">PHOTO</label>
-                        <input type="file" id="b-photo" accept="image/*" capture="environment">
-                    </div>
-                    <button type="submit" class="btn btn-primary">SIMPAN</button>
-                </form>
-            </div>
-        </section>
-
-        <!-- 3. Layar Data Harga -->
-        <section id="data-harga">
-            <div class="card">
-                <h2 style="color: var(--primary-blue);">Input Data Harga</h2>
-                <form id="form-harga" onsubmit="simpanHarga(event)">
-                    <div class="form-group">
-                        <label for="h-kode">KODE</label>
-                        <select id="h-kode" required onchange="loadDataHargaByKode()">
-                            <option value="">-- Pilih Barang --</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="h-tanggal">TANGGAL</label>
-                        <input type="text" id="h-tanggal" disabled>
-                    </div>
-                    <div class="form-group">
-                        <label for="h-hargadasar">HARGA DASAR</label>
-                        <input type="number" id="h-hargadasar" required oninput="hitungHargaJual()">
-                    </div>
-                    <div class="form-group">
-                        <label for="h-diskon">DISKON (%)</label>
-                        <input type="number" id="h-diskon" value="0" oninput="hitungHargaJual()">
-                    </div>
-                    <div class="form-group">
-                        <label for="h-pajak">PAJAK (%)</label>
-                        <input type="number" id="h-pajak" value="0" oninput="hitungHargaJual()">
-                    </div>
-                    <div class="form-group">
-                        <label for="h-margin">MARGIN (%)</label>
-                        <input type="number" id="h-margin" value="0" oninput="hitungHargaJual()">
-                    </div>
-                    <div class="form-group">
-                        <label for="h-hargajual">HARGA JUAL</label>
-                        <input type="number" id="h-hargajual" disabled style="background-color: #e8f5e9; font-weight: bold;">
-                    </div>
-                    <div class="form-group">
-                        <label for="h-catatan">CATATAN</label>
-                        <textarea id="h-catatan" rows="2"></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary">SIMPAN</button>
-                </form>
-            </div>
-        </section>
-
-        <!-- 4. Layar Data Inventory -->
-        <section id="data-inventory">
-            <div class="card">
-                <h2 style="color: var(--primary-blue);">Input Inventory (Stok)</h2>
-                <form id="form-inventory" onsubmit="simpanInventory(event)">
-                    <div class="form-group">
-                        <label for="i-kode">KODE</label>
-                        <select id="i-kode" required onchange="loadDataInventoryByKode()">
-                            <option value="">-- Pilih Barang --</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="i-tanggal">TANGGAL</label>
-                        <input type="text" id="i-tanggal" disabled>
-                    </div>
-                    <div class="form-group">
-                        <label for="i-stok-awal">STOK TERAKHIR (Baca)</label>
-                        <input type="number" id="i-stok-awal" disabled>
-                    </div>
-                    <div class="form-group">
-                        <label for="i-tambah">TAMBAH</label>
-                        <input type="number" id="i-tambah" value="0" oninput="hitungStokAkhir()">
-                    </div>
-                    <div class="form-group">
-                        <label for="i-kurang">KURANG</label>
-                        <input type="number" id="i-kurang" disabled value="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="i-stok">STOK AKHIR (Hasil)</label>
-                        <input type="number" id="i-stok" disabled style="background-color: #fff3e0; font-weight: bold;">
-                    </div>
-                    <div class="form-group">
-                        <label for="i-namatransaksi">NAMA TRANSAKSI</label>
-                        <input type="text" id="i-namatransaksi" value="TAMBAHSTOK" disabled>
-                    </div>
-                    <div class="form-group">
-                        <label for="i-catatan">CATATAN</label>
-                        <textarea id="i-catatan" rows="2"></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary">SIMPAN</button>
-                </form>
-            </div>
-        </section>
-
-        <!-- 5. Layar Pengaturan -->
-        <section id="pengaturan">
-            <div class="card">
-                <h2 style="color: var(--primary-blue);">Pengaturan</h2>
+    <!-- 2. DATA BARANG -->
+    <section id="barang" class="section">
+        <div class="card">
+            <div class="card-header">Input Data Barang</div>
+            <form onsubmit="event.preventDefault(); saveBarang();">
                 <div class="form-group">
-                    <label for="set-link">Link Google Sheet (Script App URL)</label>
-                    <textarea id="set-link" rows="4" placeholder="Masukkan URL Web App Google Script di sini..."></textarea>
+                    <label>KODE *</label>
+                    <input type="text" id="bKode" required placeholder="Cari..." oninput="searchBarang(this.value, 'code')">
                 </div>
-                <button class="btn btn-primary" onclick="simpanPengaturan()">SIMPAN PENGATURAN</button>
-                <div style="margin-top: 20px; font-size: 0.9rem; color: #666;">
-                    <p>Catatan: Link akan disimpan ke memori browser dan file <code>setting.txt</code> akan diunduh otomatis.</p>
+                <div class="form-group">
+                    <label>NAMA *</label>
+                    <input type="text" id="bNama" required placeholder="Cari..." oninput="searchBarang(this.value, 'name')">
                 </div>
+                <div class="form-group"><label>KELOMPOK</label><input type="text" id="bKelompok"></div>
+                <div class="form-group"><label>JENIS</label><input type="text" id="bJenis"></div>
+                <div class="form-group"><label>WARNA</label><input type="text" id="bWarna"></div>
+                <div class="form-group"><label>UKURAN</label><input type="text" id="bUkuran"></div>
+                <div class="form-group"><label>MEDSOS</label><input type="text" id="bMedsos"></div>
+                <div class="form-group">
+                    <label>FOTO (Kamera/Galeri)</label>
+                    <input type="file" id="bPhotoInput" accept="image/*" capture="environment" onchange="handleImage(this)">
+                    <img id="bPhotoPrev" class="photo-thumb" style="display:none;">
+                    <input type="hidden" id="bPhotoData">
+                </div>
+                <div class="form-group"><label>CATATAN</label><textarea id="bCatatan"></textarea></div>
+                <button type="submit" class="btn btn-primary">SIMPAN DATA BARANG</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- 3. DATA HARGA -->
+    <section id="harga" class="section">
+        <div class="card">
+            <div class="card-header">Input Data Harga</div>
+            <form onsubmit="event.preventDefault(); saveHarga();">
+                <div class="form-group"><label>KODE BARANG</label><select id="hKode" required onchange="loadPriceInfo()"></select></div>
+                <div class="form-group"><label>TANGGAL</label><input type="text" id="hTanggal" disabled></div>
+                <div class="form-group"><label>HARGA DASAR</label><input type="number" id="hDasar" required oninput="calcHarga()"></div>
+                <div class="form-group"><label>MARGIN (%)</label><input type="number" id="hMargin" value="0" oninput="calcHarga()"></div>
+                <div class="form-group"><label>DISKON (%)</label><input type="number" id="hDiskon" value="0" oninput="calcHarga()"></div>
+                <div class="form-group"><label>PAJAK (%)</label><input type="number" id="hPajak" value="0" oninput="calcHarga()"></div>
+                <div class="form-group"><label>HARGA JUAL</label><input type="number" id="hJual" disabled></div>
+                <div class="form-group"><label>CATATAN</label><textarea id="hCatatan"></textarea></div>
+                <button type="submit" class="btn btn-primary">SIMPAN DATA HARGA</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- 4. DATA INVENTORY -->
+    <section id="inventory" class="section">
+        <div class="card">
+            <div class="card-header">Input Inventory</div>
+            <form onsubmit="event.preventDefault(); saveInv();">
+                <div class="form-group"><label>KODE BARANG</label><select id="iKode" required onchange="loadStockInfo()"></select></div>
+                <div class="form-group"><label>TANGGAL</label><input type="text" id="iTanggal" disabled></div>
+                <div class="form-group"><label>STOK TERAKHIR</label><input type="number" id="iLastStock" disabled></div>
+                <div class="form-group"><label>TAMBAH</label><input type="number" id="iTambah" value="0" oninput="calcStock()"></div>
+                <div class="form-group"><label>KURANG</label><input type="number" id="iKurang" disabled value="0"></div>
+                <div class="form-group"><label>TOTAL STOK BARU</label><input type="number" id="iNewStock" readonly></div>
+                <div class="form-group"><label>NAMA TRANSAKSI</label><input type="text" value="TAMBAHSTOK" disabled></div>
+                <div class="form-group"><label>CATATAN</label><textarea id="iCatatan"></textarea></div>
+                <button type="submit" class="btn btn-primary">SIMPAN INVENTORY</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- 5. PENGATURAN -->
+    <section id="setting" class="section">
+        <div class="card">
+            <div class="card-header">Pengaturan</div>
+            <div class="form-group">
+                <label>Link Google Script (Web App URL)</label>
+                <input type="url" id="settingUrl" placeholder="https://script.google.com/macros/s/...">
             </div>
-        </section>
+            <button class="btn btn-primary" onclick="saveSetting()">SIMPAN PENGATURAN</button>
+            <p style="margin-top:10px; font-size:0.8rem; color:#666;">
+                Link disimpan di memory browser (localStorage). File setting.txt tidak dapat dibuat langsung di hosting statis.
+            </p>
+        </div>
+    </section>
 
-    </main>
+</main>
 
-    <!-- Container Notifikasi -->
-    <div id="toast-container"></div>
+<div id="toast">Notifikasi</div>
 
-    <script>
-        // --- 1. STATE MANAGEMENT & SETTINGS ---
-        let config = { sheetUrl: '' };
+<script>
+    /* --- CONFIG & STATE --- */
+    let SCRIPT_URL = localStorage.getItem('gsheet_url') || '';
+    let html5QrcodeScanner = null;
+    let isScanning = false;
+    let currentScanCode = null;
+
+    /* --- NAVIGATION --- */
+    function toggleMenu() {
+        document.getElementById('navDrawer').classList.toggle('open');
+        document.getElementById('overlay').classList.toggle('open');
+    }
+    function nav(page) {
+        toggleMenu();
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById(page).classList.add('active');
         
-        // Mock Data Database (Simulasi Google Sheet)
-        let mockDB = {
-            MBARANG: [
-                {KODE: "BRG001", NAMA: "Kemeja Batik", KELOMPOK: "Pakaian", JENIS: "Atasan", WARNA: "Coklat", UKURAN: "L", CATATAN: "Motif Solo", MEDSOS: "@batik_jaya"},
-                {KODE: "BRG002", NAMA: "Celana Jeans", KELOMPOK: "Pakaian", JENIS: "Bawahan", WARNA: "Biru", UKURAN: "32", CATATAN: "Bahan Denim", MEDSOS: "@jeans_store"}
-            ],
-            MHARGA: [
-                {KODE: "BRG001", HARGADASAR: 50000, DISKON: 0, PAJAK: 0, MARGIN: 20, HARGAJUAL: 60000},
-                {KODE: "BRG002", HARGADASAR: 100000, DISKON: 5, PAJAK: 10, MARGIN: 30, HARGAJUAL: 125000} 
-            ],
-            MINV: [
-                {KODE: "BRG001", STOK: 50},
-                {KODE: "BRG002", STOK: 20}
-            ]
+        // Init specific page
+        if(page === 'harga' || page === 'inventory') loadDropdown(page);
+        if(page === 'setting') document.getElementById('settingUrl').value = SCRIPT_URL;
+        
+        // Stop scanner if leaving home
+        if(page !== 'home' && isScanning) toggleScan();
+    }
+
+    /* --- SETTINGS --- */
+    function saveSetting() {
+        const url = document.getElementById('settingUrl').value.trim();
+        if(!url) return alert('URL tidak boleh kosong');
+        SCRIPT_URL = url;
+        localStorage.setItem('gsheet_url', url);
+        showToast('Pengaturan Disimpan');
+    }
+
+    /* --- API HELPERS --- */
+    async function sendToGAS(payload) {
+        if (!SCRIPT_URL) {
+            alert("Harap isi URL Pengaturan dulu!");
+            nav('setting');
+            throw new Error("No URL");
+        }
+        try {
+            const res = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+            const text = await res.text();
+            return JSON.parse(text);
+        } catch (e) {
+            console.error(e);
+            alert("Gagal koneksi ke Google Sheet. Periksa koneksi/internet.");
+            return { status: "error" };
+        }
+    }
+
+    /* --- 1. BARANG LOGIC --- */
+    async function searchBarang(val, type) {
+        // Debounce simple
+        if(val.length < 3) return; 
+        // Lakukan pencarian real-time
+        const res = await sendToGAS({ action: "searchBarang", keyword: val });
+        if(res.status === 'success' && res.data.length > 0) {
+            // Ambil data pertama yang mirip untuk autofill jika user mengetik persis atau mendekati
+            // Disini kita biarkan user memilih jika ingin, atau otomatis fill jika match kuat
+            // Untuk simplifikasi: jika input Code, cari exact code. Jika input Nama, cari exact nama.
+            const match = res.data.find(d => type==='code' ? d.kode===val : d.nama===val);
+            if(match) fillBarangForm(match);
+        }
+    }
+
+    function fillBarangForm(d) {
+        document.getElementById('bNama').value = d.nama;
+        document.getElementById('bKelompok').value = d.kelompok;
+        document.getElementById('bJenis').value = d.jenis;
+        document.getElementById('bWarna').value = d.warna;
+        document.getElementById('bUkuran').value = d.ukuran;
+        document.getElementById('bMedsos').value = d.medsos;
+        document.getElementById('bCatatan').value = d.catatan;
+        if(d.photo) {
+            const img = document.getElementById('bPhotoPrev');
+            img.src = d.photo; img.style.display='block';
+            document.getElementById('bPhotoData').value = d.photo;
+        }
+    }
+
+    function handleImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('bPhotoPrev').src = e.target.result;
+                document.getElementById('bPhotoPrev').style.display = 'block';
+                // Resize image to avoid GAS limit (Simple approach: just base64)
+                // Note: Base64 large images might hit GAS POST limit (50MB).
+                // In production, upload to Drive/Imgur first is better.
+                // Here we limit max size logic implicitly by user choice or simple crop not implemented to keep single file simple.
+                document.getElementById('bPhotoData').value = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    async function saveBarang() {
+        const data = {
+            action: "saveBarang",
+            kode: document.getElementById('bKode').value,
+            nama: document.getElementById('bNama').value,
+            kelompok: document.getElementById('bKelompok').value,
+            jenis: document.getElementById('bJenis').value,
+            warna: document.getElementById('bWarna').value,
+            ukuran: document.getElementById('bUkuran').value,
+            catatan: document.getElementById('bCatatan').value,
+            medsos: document.getElementById('bMedsos').value,
+            photo: document.getElementById('bPhotoData').value
         };
-
-        // Inisialisasi Aplikasi
-        document.addEventListener('DOMContentLoaded', () => {
-            loadSettings();
-            setDateTimeNow('h-tanggal');
-            setDateTimeNow('i-tanggal');
-        });
-
-        // --- 2. NAVIGASI & UI ---
-        function toggleMenu() { document.getElementById('mainMenu').classList.toggle('active'); }
-
-        function navTo(screenId) {
-            document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-            document.getElementById('mainMenu').classList.remove('active');
-            
-            // Pastikan kamera dimatikan jika pindah layar
-            if(screenId !== 'beranda') stopScan();
-
-            if(screenId === 'data-harga') populateDropdown('h-kode');
-            if(screenId === 'data-inventory') populateDropdown('i-kode');
-            if(screenId === 'data-barang') {
-                document.getElementById('form-barang').reset();
-                document.getElementById('b-kode').focus();
-            }
+        const res = await sendToGAS(data);
+        if(res.status === 'success') {
+            showToast('Data Barang Tersimpan');
+            document.querySelector('#barang form').reset();
+            document.getElementById('bPhotoPrev').style.display='none';
         }
+    }
 
-        function keluarApp() {
-            if(confirm("Apakah Anda yakin ingin keluar?")) { window.location.reload(); }
-        }
-
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerText = message;
-            container.appendChild(toast);
-            void toast.offsetWidth; toast.classList.add('show');
-            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3000);
-        }
-
-        // --- 3. LOGIKA SCANNER (REAL) ---
-        let html5QrcodeScanner = null;
-        let isScanning = false;
-        let scannedCode = "";
-
-        function onScanSuccess(decodedText, decodedResult) {
-            // Handle scan sukses
-            // alert(`Scan result: ${decodedText}`);
-            stopScan(); // Matikan kamera setelah dapat hasil
-            processScanResult(decodedText);
-        }
-
-        function onScanFailure(error) {
-            // Handle scan error (frame biasa, abaikan console log agar tidak spam)
-            // console.warn(`Code scan error = ${error}`);
-        }
-
-        function startScan() {
-            document.getElementById('scan-result').style.display = 'none';
-            document.getElementById('reader').style.display = 'block';
-            document.getElementById('btn-stop-scan').style.display = 'block';
-            document.getElementById('scan-status').innerText = "Kamera aktif... Arahkan ke barcode.";
-            document.getElementById('btn-scan-trigger').style.display = 'none';
-
-            if (!isScanning) {
-                html5QrcodeScanner = new Html5Qrcode("reader");
-                const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-                
-                // Mencoba menggunakan kamera belakang (environment)
-                html5QrcodeScanner.start({ facingMode: "environment" }, config, onScanSuccess, onScanFailure)
-                .then(() => {
-                    isScanning = true;
-                    console.log("Camera started");
-                })
-                .catch(err => {
-                    showToast("Gagal membuka kamera: " + err, "error");
-                    stopScan();
-                });
-            }
-        }
-
-        function stopScan() {
-            if (html5QrcodeScanner && isScanning) {
-                html5QrcodeScanner.stop().then(() => {
-                    isScanning = false;
-                    html5QrcodeScanner.clear();
-                    document.getElementById('reader').style.display = 'none';
-                    document.getElementById('btn-stop-scan').style.display = 'none';
-                    document.getElementById('scan-status').innerText = "";
-                    document.getElementById('btn-scan-trigger').style.display = 'flex'; // Kembalikan tombol scan besar
-                }).catch(err => {
-                    console.error("Failed to stop", err);
-                });
-            }
-        }
-
-        // --- 4. LOGIKA SCAN RESULT & TRANSAKSI ---
-        function processScanResult(code) {
-            scannedCode = code;
-            
-            const barang = mockDB.MBARANG.find(b => b.KODE === code);
-            const harga = mockDB.MHARGA.find(h => h.KODE === code);
-            const inv = mockDB.MINV.find(i => i.KODE === code);
-
-            if(barang) {
-                document.getElementById('res-kode').innerText = barang.KODE;
-                document.getElementById('res-nama').innerText = barang.NAMA;
-                document.getElementById('res-kelompok').innerText = barang.KELOMPOK || "-";
-                document.getElementById('res-jenis').innerText = barang.JENIS || "-";
-                document.getElementById('res-warna').innerText = barang.WARNA || "-";
-                document.getElementById('res-ukuran').innerText = barang.UKURAN || "-";
-                
-                if(harga) {
-                    document.getElementById('res-harga').innerText = "Rp " + harga.HARGAJUAL.toLocaleString('id-ID');
-                } else {
-                    document.getElementById('res-harga').innerText = "Rp 0 (Belum set harga)";
-                }
-
-                if(inv) {
-                    document.getElementById('res-stok').innerText = inv.STOK;
-                } else {
-                    document.getElementById('res-stok').innerText = 0;
-                }
-
-                document.getElementById('scan-result').style.display = 'block';
-                document.getElementById('scan-status').innerText = "Berhasil Scan: " + code;
-            } else {
-                showToast("Data Barang tidak ditemukan di database!", "error");
-                // Fallback: Tampilkan kode saja untuk testing jika belum ada di DB
-                document.getElementById('res-kode').innerText = code;
-                document.getElementById('res-nama').innerText = "Baru (Belum Terdaftar)";
-                document.getElementById('scan-result').style.display = 'block';
-            }
-        }
-
-        function cancelTransaction() {
-            document.getElementById('scan-result').style.display = 'none';
-            document.getElementById('scan-status').innerText = "";
-            scannedCode = "";
-        }
-
-        async function processTransaction() {
-            if(!scannedCode) return;
-
-            const inv = mockDB.MINV.find(i => i.KODE === scannedCode);
-            const currentStock = inv ? inv.STOK : 0;
-            const newStock = currentStock - 1;
-
-            if(newStock < 0) {
-                showToast("Stok tidak mencukupi!", "error");
-                return;
-            }
-
-            const transData = {
-                KODE: scannedCode,
-                TANGGAL: new Date().toISOString(),
-                TAMBAH: 0, KURANG: 1, STOK: newStock,
-                NAMATRANSAKSI: "BELI", CATATAN: "Transaksi Scan"
-            };
-
-            const idx = mockDB.MINV.findIndex(i => i.KODE === scannedCode);
-            if(idx >= 0) mockDB.MINV[idx] = {KODE: scannedCode, STOK: newStock};
-            else mockDB.MINV.push({KODE: scannedCode, STOK: newStock});
-
-            console.log("Transaksi disimpan:", transData);
-            showToast("Transaksi BERHASIL disimpan!");
-
-            cancelTransaction();
-            document.getElementById('btn-scan-trigger').style.display = 'flex';
-        }
-
-        // --- 5. FUNGSI FORM & DATA (Sama seperti sebelumnya) ---
-        function simpanPengaturan() {
-            const link = document.getElementById('set-link').value;
-            config.sheetUrl = link;
-            localStorage.setItem('g_sheet_url', link);
-            const blob = new Blob([link], { type: 'text/plain' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = 'setting.txt';
-            document.body.appendChild(a); a.click(); document.body.removeChild(a);
-            showToast("Pengaturan disimpan!");
-        }
-
-        function autoFillBarang(triggerBy) {
-            const kodeVal = document.getElementById('b-kode').value;
-            const found = mockDB.MBARANG.find(b => b.KODE === kodeVal);
-            if (found && triggerBy === 'kode') {
-                document.getElementById('b-nama').value = found.NAMA;
-                document.getElementById('b-kelompok').value = found.KELOMPOK || '';
-                document.getElementById('b-jenis').value = found.JENIS || '';
-                document.getElementById('b-warna').value = found.WARNA || '';
-                document.getElementById('b-ukuran').value = found.UKURAN || '';
-                document.getElementById('b-catatan').value = found.CATATAN || '';
-                document.getElementById('b-mediasosial').value = found.MEDSOS || '';
-            }
-        }
-
-        async function simpanBarang(e) {
-            e.preventDefault();
-            const kode = document.getElementById('b-kode').value;
-            const nama = document.getElementById('b-nama').value;
-            if(!kode || !nama) { showToast("KODE dan NAMA wajib diisi!", "error"); return; }
-            
-            const newData = {
-                KODE: kode, NAMA: nama,
-                KELOMPOK: document.getElementById('b-kelompok').value,
-                JENIS: document.getElementById('b-jenis').value,
-                WARNA: document.getElementById('b-warna').value,
-                UKURAN: document.getElementById('b-ukuran').value,
-                CATATAN: document.getElementById('b-catatan').value,
-                MEDSOS: document.getElementById('b-mediasosial').value,
-                TANGGAL: new Date().toISOString()
-            };
-
-            const idx = mockDB.MBARANG.findIndex(b => b.KODE === kode);
-            if(idx >= 0) mockDB.MBARANG[idx] = newData; else mockDB.MBARANG.push(newData);
-
-            showToast("Data Barang berhasil disimpan!");
-            e.target.reset(); document.getElementById('b-kode').focus();
-        }
-
-        function populateDropdown(elementId) {
-            const select = document.getElementById(elementId);
-            select.innerHTML = '<option value="">-- Pilih Barang --</option>';
-            mockDB.MBARANG.forEach(item => {
+    /* --- 2. HARGA LOGIC --- */
+    async function loadDropdown(page) {
+        const selectId = page === 'harga' ? 'hKode' : 'iKode';
+        const select = document.getElementById(selectId);
+        select.innerHTML = '<option value="">Loading...</option>';
+        
+        const res = await sendToGAS({ action: "getDropdown" });
+        select.innerHTML = '<option value="">-- Pilih Barang --</option>';
+        if(res.status === 'success') {
+            res.data.forEach(d => {
                 const opt = document.createElement('option');
-                opt.value = item.KODE; opt.text = `${item.KODE} - ${item.NAMA}`;
+                opt.value = d.kode;
+                opt.innerText = `${d.kode} - ${d.nama}`;
                 select.appendChild(opt);
             });
         }
+    }
 
-        function loadDataHargaByKode() {
-            const kode = document.getElementById('h-kode').value;
-            setDateTimeNow('h-tanggal');
-            if(!kode) return;
-            const harga = mockDB.MHARGA.find(h => h.KODE === kode);
-            if(harga) {
-                document.getElementById('h-hargadasar').value = harga.HARGADASAR;
-                document.getElementById('h-diskon').value = harga.DISKON;
-                document.getElementById('h-pajak').value = harga.PAJAK;
-                document.getElementById('h-margin').value = harga.MARGIN;
-                hitungHargaJual();
-            } else {
-                document.getElementById('h-hargadasar').value = '';
-                document.getElementById('h-diskon').value = 0;
-                document.getElementById('h-pajak').value = 0;
-                document.getElementById('h-margin').value = 0;
-                document.getElementById('h-hargajual').value = 0;
-            }
+    async function loadPriceInfo() {
+        document.getElementById('hTanggal').value = new Date().toISOString().slice(0,10) + ' ' + new Date().toTimeString().slice(0,5);
+        const kode = document.getElementById('hKode').value;
+        if(!kode) return;
+        
+        // Load last price
+        const res = await sendToGAS({ action: "getLatestPrice", kode: kode });
+        if(res.status === 'success' && res.data) {
+            document.getElementById('hDasar').value = res.data.dasar;
+            document.getElementById('hMargin').value = res.data.margin;
+            document.getElementById('hDiskon').value = res.data.diskon;
+            document.getElementById('hPajak').value = res.data.pajak;
+            calcHarga();
+        } else {
+            // Reset jika tidak ada harga sebelumnya
+            document.getElementById('hDasar').value = '';
+            document.getElementById('hMargin').value = 0;
+            document.getElementById('hDiskon').value = 0;
+            document.getElementById('hPajak').value = 0;
+            document.getElementById('hJual').value = '';
+        }
+    }
+
+    function calcHarga() {
+        const dasar = parseFloat(document.getElementById('hDasar').value) || 0;
+        const margin = parseFloat(document.getElementById('hMargin').value) || 0;
+        const diskon = parseFloat(document.getElementById('hDiskon').value) || 0;
+        const pajak = parseFloat(document.getElementById('hPajak').value) || 0;
+
+        // Rumus: Dasar + Margin%*Dasar - Diskon%*Dasar - Pajak%*Dasar
+        const valMargin = dasar * (margin/100);
+        const valDiskon = dasar * (diskon/100);
+        const valPajak = dasar * (pajak/100);
+        
+        document.getElementById('hJual').value = dasar + valMargin - valDiskon - valPajak;
+    }
+
+    async function saveHarga() {
+        const data = {
+            action: "saveHarga",
+            kode: document.getElementById('hKode').value,
+            tanggal: document.getElementById('hTanggal').value,
+            dasar: document.getElementById('hDasar').value,
+            margin: document.getElementById('hMargin').value,
+            diskon: document.getElementById('hDiskon').value,
+            pajak: document.getElementById('hPajak').value,
+            jual: document.getElementById('hJual').value,
+            catatan: document.getElementById('hCatatan').value
+        };
+        const res = await sendToGAS(data);
+        if(res.status === 'success') {
+            showToast('Data Harga Tersimpan');
+            document.querySelector('#harga form').reset();
+            document.getElementById('hKode').focus();
+        }
+    }
+
+    /* --- 3. INVENTORY LOGIC --- */
+    async function loadStockInfo() {
+        document.getElementById('iTanggal').value = new Date().toISOString().slice(0,10) + ' ' + new Date().toTimeString().slice(0,5);
+        const kode = document.getElementById('iKode').value;
+        if(!kode) return;
+
+        const res = await sendToGAS({ action: "getLatestStock", kode: kode });
+        const lastStock = (res.status === 'success' && res.data !== null) ? res.data : 0;
+        
+        document.getElementById('iLastStock').value = lastStock;
+        document.getElementById('iNewStock').value = lastStock;
+    }
+
+    function calcStock() {
+        const last = parseInt(document.getElementById('iLastStock').value) || 0;
+        const add = parseInt(document.getElementById('iTambah').value) || 0;
+        document.getElementById('iNewStock').value = last + add;
+    }
+
+    async function saveInv() {
+        const data = {
+            action: "saveInventory",
+            kode: document.getElementById('iKode').value,
+            tanggal: document.getElementById('iTanggal').value,
+            tambah: document.getElementById('iTambah').value,
+            kurang: 0, // Selalu 0 di layar inventory tambah stok
+            stok: document.getElementById('iNewStock').value,
+            namaTrans: "TAMBAHSTOK",
+            catatan: document.getElementById('iCatatan').value
+        };
+        const res = await sendToGAS(data);
+        if(res.status === 'success') {
+            showToast('Inventory Tersimpan');
+            document.querySelector('#inventory form').reset();
+            document.getElementById('iKode').focus();
+        }
+    }
+
+    /* --- 4. SCAN & TRANSAKSI LOGIC --- */
+    function toggleScan() {
+        const reader = document.getElementById('reader');
+        const btn = document.getElementById('scanBtn');
+        
+        if (!isScanning) {
+            // Start Scan
+            reader.style.display = 'block';
+            btn.innerText = "STOP SCAN";
+            btn.classList.replace('btn-primary', 'btn-danger');
+            isScanning = true;
+
+            html5QrcodeScanner = new Html5Qrcode("reader");
+            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+            
+            html5QrcodeScanner.start({ facingMode: "environment" }, config, onScanSuccess)
+            .catch(err => {
+                showToast("Gagal akses kamera: " + err);
+                toggleScan(); // Reset UI
+            });
+
+        } else {
+            // Stop Scan
+            if(html5QrcodeScanner) html5QrcodeScanner.stop().then(() => {
+                html5QrcodeScanner.clear();
+                reader.style.display = 'none';
+                btn.innerText = "MULAI SCAN KAMERA";
+                btn.classList.replace('btn-danger', 'btn-primary');
+                isScanning = false;
+            });
+        }
+    }
+
+    function onScanSuccess(decodedText, decodedResult) {
+        // Kode terdeteksi, hentikan scan
+        toggleScan();
+        currentScanCode = decodedText;
+        showToast("Kode Terdeteksi: " + decodedText);
+        loadScanData(decodedText);
+    }
+
+    async function loadScanData(kode) {
+        // Cari Data Barang
+        const resBrg = await sendToGAS({ action: "searchBarang", keyword: kode });
+        const item = resBrg.data.find(d => d.kode === kode);
+
+        // Cari Data Harga
+        const resPrice = await sendToGAS({ action: "getLatestPrice", kode: kode });
+        const price = resPrice.data;
+
+        // Cari Data Stok
+        const resStock = await sendToGAS({ action: "getLatestStock", kode: kode });
+        const stock = resStock.data;
+
+        if(item) {
+            document.getElementById('sKode').innerText = item.kode;
+            document.getElementById('sNama').innerText = item.nama;
+            const img = document.getElementById('sPhoto');
+            if(item.photo) { img.src = item.photo; img.style.display = 'block'; }
+            else { img.style.display = 'none'; }
+        } else {
+            document.getElementById('sKode').innerText = kode;
+            document.getElementById('sNama').innerText = "Tidak ditemukan";
         }
 
-        function hitungHargaJual() {
-            const dasar = parseFloat(document.getElementById('h-hargadasar').value) || 0;
-            const diskon = parseFloat(document.getElementById('h-diskon').value) || 0;
-            const pajak = parseFloat(document.getElementById('h-pajak').value) || 0;
-            const margin = parseFloat(document.getElementById('h-margin').value) || 0;
-            const valMargin = dasar * (margin / 100);
-            const valDiskon = dasar * (diskon / 100);
-            const valPajak = dasar * (pajak / 100);
-            const jual = dasar + valMargin - valDiskon - valPajak;
-            document.getElementById('h-hargajual').value = Math.round(jual);
-        }
+        document.getElementById('sHarga').innerText = (price && price.jual) ? "Rp " + parseInt(price.jual).toLocaleString('id-ID') : "-";
+        document.getElementById('sStok').innerText = stock || 0;
 
-        async function simpanHarga(e) {
-            e.preventDefault();
-            const newData = {
-                KODE: document.getElementById('h-kode').value, TANGGAL: new Date().toISOString(),
-                HARGADASAR: parseFloat(document.getElementById('h-hargadasar').value),
-                DISKON: parseFloat(document.getElementById('h-diskon').value),
-                PAJAK: parseFloat(document.getElementById('h-pajak').value),
-                MARGIN: parseFloat(document.getElementById('h-margin').value),
-                HARGAJUAL: parseFloat(document.getElementById('h-hargajual').value),
-                CATATAN: document.getElementById('h-catatan').value
-            };
-            const idx = mockDB.MHARGA.findIndex(h => h.KODE === newData.KODE);
-            if(idx >= 0) mockDB.MHARGA[idx] = newData; else mockDB.MHARGA.push(newData);
-            showToast("Data Harga berhasil disimpan!");
-            e.target.reset(); document.getElementById('h-kode').focus();
-        }
+        document.getElementById('scanData').style.display = 'block';
+    }
 
-        function loadDataInventoryByKode() {
-            const kode = document.getElementById('i-kode').value;
-            setDateTimeNow('i-tanggal');
-            if(!kode) return;
-            const inv = mockDB.MINV.find(i => i.KODE === kode);
-            const stokAkhir = inv ? inv.STOK : 0;
-            document.getElementById('i-stok-awal').value = stokAkhir;
-            document.getElementById('i-tambah').value = 0;
-            document.getElementById('i-stok').value = stokAkhir;
-        }
+    async function doTransaction() {
+        if(!currentScanCode) return;
+        
+        // 1. Ambil stok terakhir
+        const resStock = await sendToGAS({ action: "getLatestStock", kode: currentScanCode });
+        const lastStock = (resStock.data !== null) ? parseInt(resStock.data) : 0;
+        const newStock = lastStock - 1;
 
-        function hitungStokAkhir() {
-            const stokAwal = parseFloat(document.getElementById('i-stok-awal').value) || 0;
-            const tambah = parseFloat(document.getElementById('i-tambah').value) || 0;
-            document.getElementById('i-stok').value = stokAwal + tambah;
-        }
+        // 2. Simpan Transaksi
+        const data = {
+            action: "saveInventory",
+            kode: currentScanCode,
+            tanggal: new Date().toISOString().slice(0,10) + ' ' + new Date().toTimeString().slice(0,5),
+            tambah: 0,
+            kurang: 1,
+            stok: newStock,
+            namaTrans: "BELI",
+            catatan: "Transaksi HP"
+        };
 
-        async function simpanInventory(e) {
-            e.preventDefault();
-            const kode = document.getElementById('i-kode').value;
-            const newData = {
-                KODE: kode, TANGGAL: new Date().toISOString(),
-                TAMBAH: parseInt(document.getElementById('i-tambah').value), KURANG: 0,
-                STOK: parseInt(document.getElementById('i-stok').value),
-                NAMATRANSAKSI: "TAMBAHSTOK", CATATAN: document.getElementById('i-catatan').value
-            };
-            const idx = mockDB.MINV.findIndex(i => i.KODE === kode);
-            if(idx >= 0) mockDB.MINV[idx] = {KODE: kode, STOK: newData.STOK};
-            else mockDB.MINV.push({KODE: kode, STOK: newData.STOK});
-
-            showToast("Data Inventory berhasil disimpan!");
-            e.target.reset(); document.getElementById('i-kode').focus();
+        const res = await sendToGAS(data);
+        if(res.status === 'success') {
+            showToast("Transaksi Berhasil!");
+            resetScan();
+        } else {
+            showToast("Gagal Transaksi");
         }
+    }
 
-        function setDateTimeNow(elementId) {
-            const now = new Date();
-            const dateStr = now.toISOString().slice(0,10) + ' ' + now.toTimeString().slice(0,5);
-            const el = document.getElementById(elementId);
-            if(el) el.value = dateStr;
-        }
-    </script>
+    function resetScan() {
+        document.getElementById('scanData').style.display = 'none';
+        currentScanCode = null;
+        document.getElementById('reader').innerHTML = ""; // Reset reader container
+    }
+
+    function showToast(msg) {
+        const t = document.getElementById("toast");
+        t.innerText = msg;
+        t.className = "show";
+        setTimeout(() => { t.className = t.className.replace("show", ""); }, 3000);
+    }
+</script>
+
 </body>
 </html>

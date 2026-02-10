@@ -12,7 +12,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">Inventory App</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
@@ -57,8 +57,8 @@
             <h2>Data Barang</h2>
             <form id="barangForm">
                 <div class="row">
-                    <div class="col-md-6 mb-3"><input type="text" class="form-control" id="bKode" placeholder="KODE" required></div>
-                    <div class="col-md-6 mb-3"><input type="text" class="form-control" id="bNama" placeholder="NAMA" required></div>
+                    <div class="col-md-6 mb-3"><input type="text" class="form-control" id="bKode" placeholder="KODE" required oninput="searchSimilar('bKode', 'MBARANG', 0)"></div>
+                    <div class="col-md-6 mb-3"><input type="text" class="form-control" id="bNama" placeholder="NAMA" required oninput="searchSimilar('bNama', 'MBARANG', 1)"></div>
                     <div class="col-md-6 mb-3"><input type="text" class="form-control" id="bKelompok" placeholder="KELOMPOK"></div>
                     <div class="col-md-6 mb-3"><input type="text" class="form-control" id="bJenis" placeholder="JENIS"></div>
                     <div class="col-md-6 mb-3"><input type="text" class="form-control" id="bWarna" placeholder="WARNA"></div>
@@ -79,9 +79,9 @@
                     <div class="col-md-6 mb-3"><select class="form-select" id="hKode" required><option>Pilih KODE</option></select></div>
                     <div class="col-md-6 mb-3"><input type="text" class="form-control" id="hTanggal" disabled></div>
                     <div class="col-md-6 mb-3"><input type="number" class="form-control" id="hHargaDasar" placeholder="HARGADASAR"></div>
-                    <div class="col-md-6 mb-3"><input type="number" class="form-control" id="hDiskon" placeholder="DISKON (%)"></div>
-                    <div class="col-md-6 mb-3"><input type="number" class="form-control" id="hPajak" placeholder="PAJAK (%)"></div>
-                    <div class="col-md-6 mb-3"><input type="number" class="form-control" id="hMargin" placeholder="MARGIN (%)"></div>
+                    <div class="col-md-6 mb-3"><input type="number" class="form-control" id="hDiskon" placeholder="DISKON (%)" oninput="calculateHargaJual()"></div>
+                    <div class="col-md-6 mb-3"><input type="number" class="form-control" id="hPajak" placeholder="PAJAK (%)" oninput="calculateHargaJual()"></div>
+                    <div class="col-md-6 mb-3"><input type="number" class="form-control" id="hMargin" placeholder="MARGIN (%)" oninput="calculateHargaJual()"></div>
                     <div class="col-md-6 mb-3"><input type="number" class="form-control" id="hHargaJual" disabled></div>
                     <div class="col-md-12 mb-3"><textarea class="form-control" id="hCatatan" placeholder="CATATAN"></textarea></div>
                 </div>
@@ -94,9 +94,9 @@
             <h2>Data Inventory</h2>
             <form id="inventoryForm">
                 <div class="row">
-                    <div class="col-md-6 mb-3"><select class="form-select" id="iKode" required><option>Pilih KODE</option></select></div>
+                    <div class="col-md-6 mb-3"><select class="form-select" id="iKode" required onchange="loadStok()"><option>Pilih KODE</option></select></div>
                     <div class="col-md-6 mb-3"><input type="text" class="form-control" id="iTanggal" disabled></div>
-                    <div class="col-md-6 mb-3"><input type="number" class="form-control" id="iTambah" placeholder="TAMBAH"></div>
+                    <div class="col-md-6 mb-3"><input type="number" class="form-control" id="iTambah" placeholder="TAMBAH" oninput="updateStok()"></div>
                     <div class="col-md-6 mb-3"><input type="number" class="form-control" id="iKurang" disabled></div>
                     <div class="col-md-6 mb-3"><input type="number" class="form-control" id="iStok" disabled></div>
                     <div class="col-md-6 mb-3"><input type="text" class="form-control" id="iNamaTransaksi" value="TAMBAHSTOK" readonly></div>

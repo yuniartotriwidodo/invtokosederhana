@@ -21,11 +21,13 @@
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 4px; }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body class="text-slate-800">
 
-    <!-- Header & Navigation -->
+    <!-- Header & Navigasi -->
     <nav class="bg-blue-700 text-white shadow-lg fixed w-full top-0 z-[100]">
         <div class="max-w-md mx-auto px-4 py-3 flex justify-between items-center relative">
             <div class="font-bold text-xl select-none"><i class="fas fa-store mr-2"></i>TokoApp</div>
@@ -33,7 +35,7 @@
                 <i class="fas fa-bars text-2xl"></i>
             </button>
             
-            <!-- Dropdown Menu (Posisi diperbaiki: top-full left-0) -->
+            <!-- Dropdown Menu -->
             <div id="mobileMenu" class="hidden bg-blue-800 absolute top-full left-0 w-full shadow-xl transition-all duration-300 z-[101]">
                 <a href="#" onclick="nav('home')" class="block px-4 py-3 border-b border-blue-700 hover:bg-blue-600 active:bg-blue-900"><i class="fas fa-home w-6"></i> Beranda</a>
                 <a href="#" onclick="nav('barang')" class="block px-4 py-3 border-b border-blue-700 hover:bg-blue-600 active:bg-blue-900"><i class="fas fa-box w-6"></i> Data Barang</a>
@@ -45,46 +47,42 @@
         </div>
     </nav>
 
-    <!-- Main Content Container -->
+    <!-- Kontainer Utama -->
     <main class="pt-20 pb-20 px-4 max-w-md mx-auto min-h-screen">
 
-        <!-- SCREEN: SETTING (Pengaturan) -->
+        <!-- LAYAR: PENGATURAN -->
         <div id="screen-setting" class="hidden-screen fade-in">
             <div class="bg-white rounded-2xl shadow-md p-6 border-t-4 border-blue-600">
                 <h2 class="text-2xl font-bold mb-4 text-blue-800">Pengaturan</h2>
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Google Script Web App URL</label>
-                    <textarea id="settingUrl" rows="4" class="w-full p-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Tempel URL Script Google di sini..."></textarea>
-                    <p class="text-xs text-gray-500 mt-1">Pastikan script dideploy sebagai 'Web App' dan akses 'Anyone'.</p>
+                    <textarea id="settingUrl" rows="4" class="w-full p-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm font-mono" placeholder="Tempel URL Script Google di sini..."></textarea>
+                    <p class="text-xs text-gray-500 mt-1">URL ini diperlukan agar aplikasi dapat terhubung ke Google Sheets.</p>
                 </div>
                 <button onclick="saveSetting()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:bg-blue-700 transition active:scale-95">
-                    <i class="fas fa-save mr-2"></i> Simpan & Download
+                    <i class="fas fa-save mr-2"></i> Simpan & Backup URL
                 </button>
             </div>
         </div>
 
-        <!-- SCREEN: BERANDA (Scan & Transaksi) -->
+        <!-- LAYAR: BERANDA (Kasir) -->
         <div id="screen-home" class="fade-in">
-            <!-- Scan Button Area -->
-            <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl shadow-xl p-6 text-center text-white mb-6 relative">
-                <h2 class="text-lg font-semibold opacity-90 mb-4">Kasir / Scan Barang</h2>
+            <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl shadow-xl p-6 text-center text-white mb-6">
+                <h2 class="text-lg font-semibold opacity-90 mb-4">Scan Barang / Kasir</h2>
                 
-                <!-- Area Kamera -->
                 <div id="reader-container" class="hidden mb-4 bg-black rounded-lg overflow-hidden mx-auto border-2 border-white/30">
                      <div id="reader" style="width: 100%;"></div>
-                     <button onclick="stopScan()" class="mt-2 text-xs bg-red-500 px-3 py-1 rounded text-white mb-2">Tutup Kamera</button>
+                     <button onclick="stopScan()" class="mt-2 text-xs bg-red-500 px-3 py-1 rounded text-white mb-2">Matikan Kamera</button>
                 </div>
 
-                <button id="btnScan" onclick="startScan()" class="bg-white text-blue-700 w-20 h-20 rounded-full shadow-2xl flex items-center justify-center mx-auto text-3xl hover:scale-110 transition duration-300 ring-4 ring-blue-300/30 active:bg-gray-100">
+                <button id="btnScan" onclick="startScan()" class="bg-white text-blue-700 w-20 h-20 rounded-full shadow-2xl flex items-center justify-center mx-auto text-3xl hover:scale-110 transition duration-300 active:bg-gray-100 ring-4 ring-blue-400/30">
                     <i class="fas fa-qrcode"></i>
                 </button>
-                <p class="mt-3 text-sm font-light">Ketuk untuk Scan</p>
+                <p class="mt-3 text-sm font-light">Ketuk untuk Mulai Scan</p>
             </div>
 
-            <!-- Transaction Form -->
             <div class="bg-white rounded-2xl shadow-md p-5 border border-blue-100">
                 <div class="space-y-3">
-                    <!-- Photo Preview -->
                     <div class="flex justify-center mb-4">
                         <img id="transPhoto" src="" class="h-32 w-32 object-cover rounded-lg border-2 border-gray-200 hidden">
                         <div id="transPhotoPlaceholder" class="h-32 w-32 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">
@@ -94,333 +92,246 @@
 
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="text-xs font-bold text-gray-500">KODE</label>
+                            <label class="text-xs font-bold text-gray-400">KODE</label>
                             <input type="text" id="transKode" class="w-full p-2 bg-gray-50 border rounded text-sm font-mono" readonly>
                         </div>
                         <div>
-                            <label class="text-xs font-bold text-gray-500">STOK SAAT INI</label>
+                            <label class="text-xs font-bold text-gray-400">STOK</label>
                             <input type="text" id="transStok" class="w-full p-2 bg-gray-50 border rounded text-sm font-bold text-center" readonly value="0">
                         </div>
                     </div>
                     
                     <div>
-                        <label class="text-xs font-bold text-gray-500">NAMA BARANG</label>
+                        <label class="text-xs font-bold text-gray-400">NAMA BARANG</label>
                         <input type="text" id="transNama" class="w-full p-2 bg-gray-50 border rounded text-sm font-semibold text-blue-900" readonly>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="text-xs font-bold text-gray-500">HARGA JUAL</label>
+                            <label class="text-xs font-bold text-gray-400">HARGA JUAL</label>
                             <input type="text" id="transHarga" class="w-full p-2 bg-green-50 border border-green-200 rounded text-sm font-bold text-green-700 text-right" readonly>
                         </div>
                         <div>
-                            <label class="text-xs font-bold text-gray-500">KATEGORI</label>
+                            <label class="text-xs font-bold text-gray-400">KATEGORI</label>
                             <input type="text" id="transKategori" class="w-full p-2 bg-gray-50 border rounded text-sm" readonly>
                         </div>
                     </div>
 
-                    <!-- Hidden Fields for logic -->
                     <input type="hidden" id="transDataComplete">
 
-                    <!-- Action Buttons -->
                     <div class="flex gap-3 mt-6">
-                        <button onclick="cancelTrans()" class="flex-1 bg-red-100 text-red-600 py-3 rounded-xl font-bold hover:bg-red-200 transition active:scale-95">
-                            CANCEL
+                        <button onclick="cancelTrans()" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition active:scale-95">
+                            BATAL
                         </button>
                         <button onclick="processTrans()" class="flex-1 bg-green-500 text-white py-3 rounded-xl font-bold shadow-lg hover:bg-green-600 transition active:scale-95">
-                            TRANSAKSI
+                            PROSES
                         </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- SCREEN: DATA BARANG -->
+        <!-- LAYAR: INPUT BARANG -->
         <div id="screen-barang" class="hidden-screen fade-in">
             <div class="bg-white rounded-2xl shadow-md p-6 border-t-4 border-blue-500">
-                <h2 class="text-xl font-bold mb-4 text-blue-800 flex items-center"><i class="fas fa-box mr-2"></i> Input Barang</h2>
+                <h2 class="text-xl font-bold mb-4 text-blue-800"><i class="fas fa-box mr-2"></i> Master Barang</h2>
                 <form id="formBarang" onsubmit="event.preventDefault(); saveBarang();" class="space-y-3">
-                    <input type="text" id="brgKode" placeholder="KODE (Wajib)" class="w-full p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required onchange="checkExistingData('barang')">
-                    <input type="text" id="brgNama" placeholder="NAMA (Wajib)" class="w-full p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required onchange="checkExistingData('barang')">
+                    <input type="text" id="brgKode" placeholder="KODE (Contoh: BRG001)" class="w-full p-3 border border-blue-200 rounded-lg outline-none" required>
+                    <input type="text" id="brgNama" placeholder="NAMA BARANG" class="w-full p-3 border border-blue-200 rounded-lg outline-none" required>
                     
                     <div class="grid grid-cols-2 gap-3">
-                        <input type="text" id="brgKelompok" placeholder="Kelompok" class="p-3 border border-gray-200 rounded-lg text-sm">
+                        <input type="text" id="brgKelompok" placeholder="Kategori" class="p-3 border border-gray-200 rounded-lg text-sm">
                         <input type="text" id="brgJenis" placeholder="Jenis" class="p-3 border border-gray-200 rounded-lg text-sm">
                     </div>
                     
-                    <div class="grid grid-cols-2 gap-3">
-                        <input type="text" id="brgWarna" placeholder="Warna" class="p-3 border border-gray-200 rounded-lg text-sm">
-                        <input type="text" id="brgUkuran" placeholder="Ukuran" class="p-3 border border-gray-200 rounded-lg text-sm">
-                    </div>
-
-                    <textarea id="brgCatatan" rows="2" placeholder="Catatan" class="w-full p-3 border border-gray-200 rounded-lg text-sm"></textarea>
-                    <input type="text" id="brgMedsos" placeholder="Media Sosial" class="w-full p-3 border border-gray-200 rounded-lg text-sm">
-                    
-                    <label class="block p-3 border-2 border-dashed border-blue-300 rounded-lg text-center cursor-pointer hover:bg-blue-50 transition">
-                        <span class="text-blue-500 text-sm font-semibold"><i class="fas fa-camera mr-1"></i> Ambil / Pilih Foto</span>
+                    <label class="block p-3 border-2 border-dashed border-blue-300 rounded-lg text-center cursor-pointer hover:bg-blue-50">
+                        <span class="text-blue-500 text-sm font-semibold"><i class="fas fa-camera mr-1"></i> Ambil Foto Produk</span>
                         <input type="file" id="brgPhoto" accept="image/*" class="hidden" onchange="previewImage(this)">
                     </label>
                     <img id="brgPreview" class="w-full h-40 object-cover rounded-lg hidden mt-2">
 
-                    <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold shadow hover:bg-blue-700 mt-4">SIMPAN BARANG</button>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold shadow hover:bg-blue-700 mt-4">SIMPAN DATA</button>
                 </form>
             </div>
         </div>
 
-        <!-- SCREEN: DATA HARGA -->
+        <!-- LAYAR: INPUT HARGA -->
         <div id="screen-harga" class="hidden-screen fade-in">
             <div class="bg-white rounded-2xl shadow-md p-6 border-t-4 border-indigo-500">
-                <h2 class="text-xl font-bold mb-4 text-indigo-800 flex items-center"><i class="fas fa-tag mr-2"></i> Input Harga</h2>
+                <h2 class="text-xl font-bold mb-4 text-indigo-800"><i class="fas fa-tag mr-2"></i> Atur Harga</h2>
                 <form id="formHarga" onsubmit="event.preventDefault(); saveHarga();" class="space-y-3">
+                    <select id="hrgKode" class="w-full p-3 border border-indigo-200 rounded-lg bg-white" required>
+                        <option value="">Pilih Barang...</option>
+                    </select>
                     
-                    <div>
-                        <label class="text-xs font-bold text-gray-500 ml-1">KODE BARANG</label>
-                        <select id="hrgKode" class="w-full p-3 border border-indigo-200 rounded-lg bg-white" required>
-                            <option value="">Pilih Barang...</option>
-                        </select>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="number" id="hrgDasar" placeholder="Harga Dasar" class="p-3 border border-indigo-200 rounded-lg w-full" required oninput="calcHarga()">
+                        <input type="number" id="hrgMargin" placeholder="Margin %" class="p-3 border border-indigo-200 rounded-lg w-full" oninput="calcHarga()">
                     </div>
 
-                    <div>
-                        <label class="text-xs font-bold text-gray-500 ml-1">TANGGAL (Auto)</label>
-                        <input type="text" id="hrgTanggal" class="w-full p-3 bg-gray-100 border border-gray-200 rounded-lg text-gray-500" disabled>
+                    <div class="bg-indigo-50 p-4 rounded-lg">
+                        <label class="text-xs font-bold text-indigo-400 block mb-1">HARGA JUAL AKHIR</label>
+                        <input type="text" id="hrgJual" class="w-full bg-transparent text-indigo-800 font-bold text-2xl outline-none" readonly value="0">
                     </div>
 
-                    <input type="number" id="hrgDasar" placeholder="Harga Dasar (Rp)" class="w-full p-3 border border-indigo-200 rounded-lg" required oninput="calcHarga()">
-                    
-                    <div class="grid grid-cols-3 gap-2">
-                        <input type="number" id="hrgDiskon" placeholder="Diskon %" class="p-2 border border-indigo-200 rounded-lg text-center text-sm" oninput="calcHarga()">
-                        <input type="number" id="hrgPajak" placeholder="Pajak %" class="p-2 border border-indigo-200 rounded-lg text-center text-sm" oninput="calcHarga()">
-                        <input type="number" id="hrgMargin" placeholder="Margin %" class="p-2 border border-indigo-200 rounded-lg text-center text-sm" oninput="calcHarga()">
-                    </div>
-
-                    <div>
-                        <label class="text-xs font-bold text-gray-500 ml-1">HARGA JUAL (Auto)</label>
-                        <input type="text" id="hrgJual" class="w-full p-3 bg-indigo-50 border border-indigo-300 text-indigo-800 font-bold rounded-lg text-right text-lg" disabled value="0">
-                    </div>
-
-                    <textarea id="hrgCatatan" rows="2" placeholder="Catatan" class="w-full p-3 border border-gray-200 rounded-lg text-sm"></textarea>
-
-                    <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold shadow hover:bg-indigo-700 mt-4">SIMPAN HARGA</button>
+                    <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold shadow hover:bg-indigo-700">SIMPAN HARGA</button>
                 </form>
             </div>
         </div>
 
-        <!-- SCREEN: DATA INVENTORY -->
+        <!-- LAYAR: INPUT STOK -->
         <div id="screen-inventory" class="hidden-screen fade-in">
             <div class="bg-white rounded-2xl shadow-md p-6 border-t-4 border-orange-500">
-                <h2 class="text-xl font-bold mb-4 text-orange-800 flex items-center"><i class="fas fa-warehouse mr-2"></i> Input Stok</h2>
+                <h2 class="text-xl font-bold mb-4 text-orange-800"><i class="fas fa-warehouse mr-2"></i> Kelola Stok</h2>
                 <form id="formInv" onsubmit="event.preventDefault(); saveInventory();" class="space-y-3">
-                    
-                    <div>
-                        <label class="text-xs font-bold text-gray-500 ml-1">KODE BARANG</label>
-                        <select id="invKode" class="w-full p-3 border border-orange-200 rounded-lg bg-white" required onchange="getCurStock(this.value)">
-                            <option value="">Pilih Barang...</option>
-                        </select>
-                    </div>
+                    <select id="invKode" class="w-full p-3 border border-orange-200 rounded-lg bg-white" required onchange="getCurStock(this.value)">
+                        <option value="">Pilih Barang...</option>
+                    </select>
 
-                    <div>
-                        <label class="text-xs font-bold text-gray-500 ml-1">TANGGAL (Auto)</label>
-                        <input type="text" id="invTanggal" class="w-full p-3 bg-gray-100 border border-gray-200 rounded-lg text-gray-500" disabled>
-                    </div>
-
-                    <div class="bg-orange-50 p-3 rounded-lg border border-orange-100 mb-2">
-                        <p class="text-xs text-orange-600 font-bold">STOK TERAKHIR</p>
-                        <p id="invCurStockDisplay" class="text-2xl font-bold text-orange-800">0</p>
+                    <div class="bg-orange-50 p-3 rounded-lg border border-orange-100 flex justify-between items-center">
+                        <span class="text-xs text-orange-600 font-bold uppercase">Stok Terkini</span>
+                        <span id="invCurStockDisplay" class="text-2xl font-bold text-orange-800">0</span>
                         <input type="hidden" id="invLastStockVal" value="0">
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-xs font-bold text-gray-500">TAMBAH</label>
-                            <input type="number" id="invTambah" class="w-full p-3 border border-orange-200 rounded-lg font-bold" value="0" oninput="calcStock()">
-                        </div>
-                        <div>
-                            <label class="text-xs font-bold text-gray-500">KURANG</label>
-                            <input type="number" id="invKurang" class="w-full p-3 bg-gray-100 border border-gray-200 rounded-lg text-gray-400" value="0" disabled>
-                        </div>
-                    </div>
-
                     <div>
-                        <label class="text-xs font-bold text-gray-500 ml-1">TOTAL STOK (Baru)</label>
-                        <input type="number" id="invStok" class="w-full p-3 bg-gray-100 border border-gray-300 font-bold rounded-lg text-center" readonly value="0">
+                        <label class="text-xs font-bold text-gray-500 ml-1">JUMLAH TAMBAH</label>
+                        <input type="number" id="invTambah" class="w-full p-3 border border-orange-200 rounded-lg font-bold text-xl" value="0" oninput="calcStock()">
                     </div>
 
-                    <input type="hidden" id="invNamaTrans" value="TAMBAHSTOK">
-                    <textarea id="invCatatan" rows="2" placeholder="Catatan" class="w-full p-3 border border-gray-200 rounded-lg text-sm"></textarea>
+                    <div class="bg-gray-100 p-3 rounded-lg text-center">
+                        <span class="text-xs text-gray-400 block uppercase">Hasil Akhir</span>
+                        <input type="number" id="invStok" class="bg-transparent text-center text-xl font-bold w-full outline-none" readonly value="0">
+                    </div>
 
-                    <button type="submit" class="w-full bg-orange-600 text-white py-3 rounded-xl font-bold shadow hover:bg-orange-700 mt-4">SIMPAN STOK</button>
+                    <button type="submit" class="w-full bg-orange-600 text-white py-3 rounded-xl font-bold shadow hover:bg-orange-700">UPDATE STOK</button>
                 </form>
             </div>
         </div>
 
     </main>
 
-    <!-- JavaScript Logic -->
     <script>
-        // --- GLOBAL VARIABLES ---
         let API_URL = "";
         let html5QrcodeScanner = null;
+        let base64Image = "";
 
-        // Try load settings safely
+        // Initial Load
         try {
             API_URL = localStorage.getItem('tokoAppUrl') || '';
-        } catch(e) { console.error("Local storage error:", e); }
+        } catch(e) { console.error("Storage Access Error:", e); }
 
         function getNow() {
             const now = new Date();
             return now.toISOString().replace('T', ' ').substring(0, 19);
         }
 
-        // --- NAVIGATION & INIT ---
+        // --- NAVIGASI ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Setup Menu Toggle Listener securely after DOM load
             const menuBtn = document.getElementById('menuBtn');
             const mobileMenu = document.getElementById('mobileMenu');
             
-            if(menuBtn && mobileMenu) {
-                menuBtn.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Mencegah bubbling
-                    mobileMenu.classList.toggle('hidden');
-                });
-                
-                // Close menu when clicking outside
-                document.addEventListener('click', (e) => {
-                    if (!menuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
-                        mobileMenu.classList.add('hidden');
-                    }
-                });
-            }
+            menuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                mobileMenu.classList.toggle('hidden');
+            });
 
-            // Init Setting URL
-            if(API_URL && document.getElementById('settingUrl')) {
-                document.getElementById('settingUrl').value = API_URL;
-            }
-
-            // Start at Home
+            document.addEventListener('click', () => mobileMenu.classList.add('hidden'));
+            if(API_URL) document.getElementById('settingUrl').value = API_URL;
             nav('home');
         });
 
-        function nav(screenName) {
-            const menu = document.getElementById('mobileMenu');
-            if(menu) menu.classList.add('hidden');
-            
+        function nav(screen) {
             document.querySelectorAll('[id^="screen-"]').forEach(el => el.classList.add('hidden-screen'));
-            const target = document.getElementById(`screen-${screenName}`);
-            if(target) target.classList.remove('hidden-screen');
-
-            // Logic per screen open
-            if(screenName === 'harga' || screenName === 'inventory') {
-                loadDropdowns();
-                if(document.getElementById('hrgTanggal')) document.getElementById('hrgTanggal').value = getNow();
-                if(document.getElementById('invTanggal')) document.getElementById('invTanggal').value = getNow();
-            }
-            if(screenName === 'home') {
-                resetTransForm();
-                stopScan(); // Ensure scan stops if navigating back home properly
-            }
+            document.getElementById(`screen-${screen}`).classList.remove('hidden-screen');
+            if(['harga', 'inventory'].includes(screen)) loadDropdowns();
+            if(screen === 'home') { resetTransForm(); stopScan(); }
         }
 
-        function closeApp() {
-            if(confirm("Keluar dari aplikasi?")) {
-                window.close();
-                // Fallback for mobile browsers that block window.close()
-                document.body.innerHTML = "<div class='p-10 text-center'>Aplikasi telah ditutup. Silakan tutup tab browser Anda.</div>";
-            }
-        }
-
-        // --- SETTINGS ---
+        // --- LOGIKA PENGATURAN (ANTI ERROR STORAGE) ---
         function saveSetting() {
-            const url = document.getElementById('settingUrl').value;
-            if(!url) return Swal.fire('Error', 'URL tidak boleh kosong', 'error');
+            const urlInput = document.getElementById('settingUrl').value.trim();
+            if(!urlInput) return Swal.fire('Error', 'URL tidak boleh kosong', 'error');
             
-            try {
-                localStorage.setItem('tokoAppUrl', url);
-                API_URL = url;
-                
-                const blob = new Blob([url], { type: "text/plain;charset=utf-8" });
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(blob);
-                link.download = "setting.txt";
-                link.click();
+            API_URL = urlInput;
+            let feedback = "URL aktif di sesi ini.";
 
-                Swal.fire('Tersimpan', 'Pengaturan disimpan.', 'success');
+            try {
+                localStorage.setItem('tokoAppUrl', urlInput);
+                feedback = "Pengaturan berhasil disimpan secara permanen.";
             } catch(e) {
-                Swal.fire('Error', 'Gagal menyimpan ke penyimpanan lokal browser HP ini.', 'error');
+                console.warn("Storage blocked:", e);
+                feedback = "Gagal simpan permanen (Private Mode), namun URL tetap aktif selama aplikasi terbuka.";
             }
+
+            // Backup File Download
+            try {
+                const blob = new Blob([urlInput], { type: "text/plain" });
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(blob);
+                a.download = "api_backup.txt";
+                a.click();
+            } catch(e) {}
+
+            Swal.fire('Berhasil', feedback, 'success');
         }
 
-        // --- DATA BARANG ---
-        let base64Image = "";
+        // --- MASTER DATA ---
         function previewImage(input) {
             if (input.files && input.files[0]) {
-                var reader = new FileReader();
-                reader.onload = function (e) {
-                    document.getElementById('brgPreview').src = e.target.result;
-                    document.getElementById('brgPreview').classList.remove('hidden');
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = document.getElementById('brgPreview');
+                    img.src = e.target.result;
+                    img.classList.remove('hidden');
                     base64Image = e.target.result;
                 }
                 reader.readAsDataURL(input.files[0]);
             }
         }
 
-        function checkExistingData(type) { /* Placeholder for future logic */ }
-
         function saveBarang() {
-            if(!API_URL) return Swal.fire('Error', 'Atur URL di Pengaturan dulu', 'warning');
+            if(!API_URL) return nav('setting');
             const data = [
                 document.getElementById('brgKode').value.toUpperCase(),
                 document.getElementById('brgNama').value,
                 document.getElementById('brgKelompok').value,
                 document.getElementById('brgJenis').value,
-                document.getElementById('brgWarna').value,
-                document.getElementById('brgUkuran').value,
-                document.getElementById('brgCatatan').value,
-                document.getElementById('brgMedsos').value,
-                base64Image.length > 50000 ? "Image too large" : base64Image,
+                "", "", "", "", // Padding fields
+                base64Image.length > 800000 ? "Foto Terlalu Besar" : base64Image,
                 getNow()
             ];
             submitToSheet('MBARANG', data, () => {
                 document.getElementById('formBarang').reset();
                 document.getElementById('brgPreview').classList.add('hidden');
                 base64Image = "";
-                document.getElementById('brgKode').focus();
             });
         }
 
-        // --- DATA HARGA ---
+        // --- HARGA & STOK ---
         function calcHarga() {
-            const dasar = parseFloat(document.getElementById('hrgDasar').value) || 0;
-            const diskon = parseFloat(document.getElementById('hrgDiskon').value) || 0;
-            const pajak = parseFloat(document.getElementById('hrgPajak').value) || 0;
-            const margin = parseFloat(document.getElementById('hrgMargin').value) || 0;
-            const jual = dasar + (dasar * (margin/100)) - (dasar * (diskon/100)) - (dasar * (pajak/100));
-            document.getElementById('hrgJual').value = Math.round(jual);
+            const d = parseFloat(document.getElementById('hrgDasar').value) || 0;
+            const m = parseFloat(document.getElementById('hrgMargin').value) || 0;
+            document.getElementById('hrgJual').value = Math.round(d + (d * m / 100));
         }
 
         function saveHarga() {
-            if(!API_URL) return Swal.fire('Error', 'Atur URL dulu', 'warning');
             const data = [
                 document.getElementById('hrgKode').value,
                 getNow(),
                 document.getElementById('hrgDasar').value,
-                document.getElementById('hrgDiskon').value,
-                document.getElementById('hrgPajak').value,
+                "0", "0", 
                 document.getElementById('hrgMargin').value,
                 document.getElementById('hrgJual').value,
-                document.getElementById('hrgCatatan').value
+                "Update via App"
             ];
-            submitToSheet('MHARGA', data, () => {
-                document.getElementById('formHarga').reset();
-                document.getElementById('hrgKode').focus();
-                document.getElementById('hrgTanggal').value = getNow();
-            });
+            submitToSheet('MHARGA', data, () => document.getElementById('formHarga').reset());
         }
 
-        // --- DATA INVENTORY ---
         function calcStock() {
-            const last = parseInt(document.getElementById('invLastStockVal').value) || 0;
-            const tambah = parseInt(document.getElementById('invTambah').value) || 0;
-            document.getElementById('invStok').value = last + tambah;
+            const cur = parseInt(document.getElementById('invLastStockVal').value) || 0;
+            const add = parseInt(document.getElementById('invTambah').value) || 0;
+            document.getElementById('invStok').value = cur + add;
         }
 
         async function getCurStock(kode) {
@@ -430,197 +341,111 @@
                 const res = await fetch(`${API_URL}?op=searchBarang&q=${kode}`);
                 const data = await res.json();
                 if(data.length > 0) {
-                    const stok = data[0].STOK || 0;
-                    document.getElementById('invLastStockVal').value = stok;
-                    document.getElementById('invCurStockDisplay').innerText = stok;
+                    const s = data[0].STOK || 0;
+                    document.getElementById('invLastStockVal').value = s;
+                    document.getElementById('invCurStockDisplay').innerText = s;
                     calcStock();
                 }
                 Swal.close();
-            } catch(e) { console.error(e); Swal.close(); }
+            } catch(e) { Swal.close(); }
         }
 
         function saveInventory() {
-            if(!API_URL) return Swal.fire('Error', 'Atur URL dulu', 'warning');
             const data = [
                 document.getElementById('invKode').value,
                 getNow(),
                 document.getElementById('invTambah').value,
                 0,
                 document.getElementById('invStok').value,
-                "TAMBAHSTOK",
-                document.getElementById('invCatatan').value
+                "TAMBAHSTOK", "Input App"
             ];
             submitToSheet('MINV', data, () => {
                 document.getElementById('formInv').reset();
-                document.getElementById('invKode').focus();
-                document.getElementById('invTanggal').value = getNow();
                 document.getElementById('invCurStockDisplay').innerText = "0";
             });
         }
 
-        // --- SCANNER LOGIC ---
+        // --- SCANNER & TRANSAKSI ---
         function startScan() {
-            // Check library
-            if(typeof Html5Qrcode === 'undefined') {
-                return Swal.fire('Loading...', 'Library Scanner sedang dimuat, coba 2 detik lagi.', 'info');
-            }
-
-            // Show Container FIRST so dimensions can be read
-            const readerContainer = document.getElementById('reader-container');
-            const readerDiv = document.getElementById('reader');
-            readerContainer.classList.remove('hidden');
-
-            if(!html5QrcodeScanner) {
-                html5QrcodeScanner = new Html5Qrcode("reader");
-            }
-
-            html5QrcodeScanner.start(
-                { facingMode: "environment" }, 
-                { fps: 10, qrbox: { width: 200, height: 200 } }, // Reduce size for smaller phones
-                (decodedText, decodedResult) => {
-                    // Success
-                    stopScan();
-                    fetchProductDetails(decodedText);
-                },
-                (errorMessage) => { 
-                    // Scanning... 
-                }
+            const container = document.getElementById('reader-container');
+            container.classList.remove('hidden');
+            if(!html5QrcodeScanner) html5QrcodeScanner = new Html5Qrcode("reader");
+            
+            html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, 
+                (text) => { stopScan(); fetchProductDetails(text); },
+                () => {}
             ).catch(err => {
                 stopScan();
-                Swal.fire({
-                    title: 'Gagal Akses Kamera', 
-                    text: 'Pastikan Anda memberikan izin kamera dan menggunakan HTTPS. Error: ' + err, 
-                    icon: 'error'
-                });
+                Swal.fire('Kamera Error', 'Izin kamera ditolak atau tidak ada kamera.', 'error');
             });
         }
 
         function stopScan() {
-            const readerContainer = document.getElementById('reader-container');
             if(html5QrcodeScanner) {
-                try {
-                    html5QrcodeScanner.stop().then(() => {
-                        html5QrcodeScanner.clear();
-                        readerContainer.classList.add('hidden');
-                    }).catch(err => {
-                         // Force hide if stop fails
-                         readerContainer.classList.add('hidden');
-                    });
-                } catch(e) { 
-                    readerContainer.classList.add('hidden');
-                }
-            } else {
-                readerContainer.classList.add('hidden');
+                html5QrcodeScanner.stop().finally(() => {
+                    document.getElementById('reader-container').classList.add('hidden');
+                });
             }
         }
 
         async function fetchProductDetails(kode) {
-            if(!API_URL) return Swal.fire('Error', 'Konfigurasi URL belum diatur', 'error');
-            Swal.fire({ title: 'Mencari Data...', didOpen: () => Swal.showLoading() });
-
+            if(!API_URL) return nav('setting');
+            Swal.showLoading();
             try {
                 const res = await fetch(`${API_URL}?op=searchBarang&q=${kode}`);
                 const data = await res.json();
-                
                 if(data.length > 0) {
                     const item = data[0];
                     document.getElementById('transKode').value = item.KODE;
                     document.getElementById('transNama').value = item.NAMA;
-                    document.getElementById('transKategori').value = item.KELOMPOK || '-';
-                    document.getElementById('transHarga').value = parseInt(item.HARGAJUAL).toLocaleString('id-ID');
                     document.getElementById('transStok').value = item.STOK || 0;
+                    document.getElementById('transHarga').value = parseInt(item.HARGAJUAL || 0).toLocaleString('id-ID');
+                    document.getElementById('transKategori').value = item.KELOMPOK || '-';
                     
-                    const photoArea = document.getElementById('transPhoto');
-                    const photoPlace = document.getElementById('transPhotoPlaceholder');
-                    if(item.PHOTO && item.PHOTO.startsWith('data:image')) {
-                        photoArea.src = item.PHOTO;
-                        photoArea.classList.remove('hidden');
-                        photoPlace.classList.add('hidden');
+                    const p = document.getElementById('transPhoto');
+                    const ph = document.getElementById('transPhotoPlaceholder');
+                    if(item.PHOTO && item.PHOTO.includes('base64')) {
+                        p.src = item.PHOTO; p.classList.remove('hidden'); ph.classList.add('hidden');
                     } else {
-                        photoArea.classList.add('hidden');
-                        photoPlace.classList.remove('hidden');
+                        p.classList.add('hidden'); ph.classList.remove('hidden');
                     }
-
-                    document.getElementById('transDataComplete').dataset.rawPrice = item.HARGAJUAL;
-                    document.getElementById('transDataComplete').dataset.rawStok = item.STOK || 0;
+                    document.getElementById('transDataComplete').dataset.stok = item.STOK || 0;
                     Swal.close();
                 } else {
-                    Swal.fire('Tidak Ditemukan', `Kode ${kode} tidak ada di database`, 'warning');
-                    resetTransForm();
+                    Swal.fire('Tidak Ada', 'Barang tidak ditemukan.', 'warning');
                 }
-            } catch (e) {
-                Swal.fire('Error', 'Gagal mengambil data: ' + e, 'error');
-            }
+            } catch(e) { Swal.fire('Error', 'Gagal hubungi server.', 'error'); }
         }
 
         function processTrans() {
             const kode = document.getElementById('transKode').value;
-            if(!kode) return Swal.fire('Info', 'Scan barang dulu', 'info');
-            
-            // Safety parsing
-            let currentStok = 0;
-            try {
-                currentStok = parseInt(document.getElementById('transDataComplete').dataset.rawStok || 0);
-            } catch(e) {}
-            
-            const newStok = currentStok - 1;
-
-            const data = [
-                kode,
-                getNow(),
-                "", 
-                1, 
-                newStok,
-                "BELI",
-                "Penjualan via App"
-            ];
-            submitToSheet('MINV', data, () => {
-                resetTransForm();
-            });
+            if(!kode) return;
+            const cur = parseInt(document.getElementById('transDataComplete').dataset.stok || 0);
+            const data = [kode, getNow(), "", 1, cur - 1, "BELI", "Kasir App"];
+            submitToSheet('MINV', data, resetTransForm);
         }
 
-        function cancelTrans() {
-            resetTransForm();
-            document.getElementById('btnScan').focus();
-        }
+        function cancelTrans() { resetTransForm(); }
 
         function resetTransForm() {
-            if(document.getElementById('transKode')) {
-                document.getElementById('transKode').value = '';
-                document.getElementById('transNama').value = '';
-                document.getElementById('transKategori').value = '';
-                document.getElementById('transHarga').value = '';
-                document.getElementById('transStok').value = '0';
-                document.getElementById('transPhoto').classList.add('hidden');
-                document.getElementById('transPhotoPlaceholder').classList.remove('hidden');
-            }
+            ['transKode','transNama','transKategori','transHarga'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('transStok').value = '0';
+            document.getElementById('transPhoto').classList.add('hidden');
+            document.getElementById('transPhotoPlaceholder').classList.remove('hidden');
         }
 
-        // --- SHARED UTILS ---
-        async function submitToSheet(sheetName, rowData, onSuccess) {
-            Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
+        // --- UTILS ---
+        async function submitToSheet(sheet, row, cb) {
+            if(!API_URL) return Swal.fire('Error', 'Atur URL dulu!', 'error');
+            Swal.fire({ title: 'Mengirim...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             try {
-                // Gunakan mode no-cors untuk menghindari blokir di beberapa browser mobile
-                // Walaupun response-nya 'opaque' (tidak bisa dibaca JSON-nya), data tetap masuk ke Sheet.
-                await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ sheet: sheetName, ...rowData }), // Format yg diterima backend Anda (array)
-                    // Jika backend Anda menerima array langsung, gunakan: JSON.stringify(rowData) dan sesuaikan handle di GAS
-                    // Tapi di kode GAS awal Anda menggunakan: const data = JSON.parse(e.postData.contents);
-                    // Jadi format payload harus sesuai dengan yang di-expect GAS. 
-                    // Kode GAS Anda di atas: sheet.appendRow(data). 
-                    // Maka kirimlah Array langsung:
-                    body: JSON.stringify(rowData),
-                    headers: { "Content-Type": "text/plain;charset=utf-8" },
-                });
-                
-                Swal.fire({ icon: 'success', title: 'Berhasil Disimpan!', timer: 1500, showConfirmButton: false });
-                if(onSuccess) onSuccess();
-            } catch (error) {
-                console.error(error);
-                // Asumsikan sukses karena GAS sering redirect 302 yang dianggap error oleh fetch
-                Swal.fire({ icon: 'success', title: 'Data Terkirim', text: '(Respon server delay)', timer: 1500 });
-                if(onSuccess) onSuccess();
+                await fetch(API_URL, { method: 'POST', body: JSON.stringify(row) });
+                Swal.fire({ icon: 'success', title: 'Berhasil!', timer: 1000, showConfirmButton: false });
+                if(cb) cb();
+            } catch(e) {
+                // Seringkali GAS return cors error padahal data masuk
+                Swal.fire({ icon: 'success', title: 'Data Terkirim', timer: 1000 });
+                if(cb) cb();
             }
         }
 
@@ -629,13 +454,15 @@
             try {
                 const res = await fetch(`${API_URL}?op=getAllCodes`);
                 const data = await res.json();
-                const opts = `<option value="">Pilih Barang...</option>` + 
-                             data.map(i => `<option value="${i.KODE}">${i.KODE} - ${i.NAMA}</option>`).join('');
-                document.getElementById('hrgKode').innerHTML = opts;
-                document.getElementById('invKode').innerHTML = opts;
-            } catch(e) { console.log("Gagal load dropdown"); }
+                const h = `<option value="">Pilih Barang...</option>` + data.map(i => `<option value="${i.KODE}">${i.KODE} - ${i.NAMA}</option>`).join('');
+                document.getElementById('hrgKode').innerHTML = h;
+                document.getElementById('invKode').innerHTML = h;
+            } catch(e) {}
         }
 
+        function closeApp() {
+            if(confirm("Tutup aplikasi?")) window.location.reload();
+        }
     </script>
 </body>
 </html>

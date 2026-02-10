@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aplikasi Inventory BlueTech</title>
+    
+    <!-- Library Scanner (Wajib agar scan berfungsi) -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
     <style>
         :root {
             --primary-blue: #1565C0; /* Biru Tua Elegan */
@@ -135,7 +139,7 @@
         .btn-secondary { background-color: #757575; color: var(--white); margin-top: 10px; }
 
         /* --- Khusus Layar Utama (Scan) --- */
-        .scan-area { text-align: center; padding: 40px 0; }
+        .scan-area { text-align: center; padding: 20px 0; }
         .scan-btn-large {
             width: 120px; height: 120px;
             border-radius: 50%;
@@ -152,6 +156,17 @@
             transition: transform 0.2s;
         }
         .scan-btn-large:hover { transform: scale(1.05); background-color: var(--secondary-blue); }
+        
+        /* Area kamera */
+        #reader {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto 20px;
+            display: none; /* Hidden default */
+            border: 2px solid var(--primary-blue);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
         
         .result-display {
             margin-top: 20px;
@@ -220,12 +235,22 @@
             <div class="card">
                 <div class="scan-area">
                     <h2>Scan Transaksi</h2>
-                    <p style="color:#666;">Klik tombol scan untuk memulai</p>
+                    <p style="color:#666;">Klik tombol scan untuk memulai kamera</p>
                     
-                    <button class="scan-btn-large" onclick="startScan()" title="Scan Barcode">
+                    <!-- Tombol Scan -->
+                    <button class="scan-btn-large" onclick="startScan()" title="Scan Barcode" id="btn-scan-trigger">
                         <span>📷</span>
                     </button>
+                    
+                    <!-- Area Kamera (Dibuat visible saat scanning) -->
+                    <div id="reader"></div>
+
                     <div id="scan-status" style="font-size: 0.9rem; color: var(--primary-blue); min-height: 1.2em;"></div>
+                    
+                    <!-- Tombol Stop Kamera (Muncul hanya saat scanning) -->
+                    <button id="btn-stop-scan" class="btn btn-danger" onclick="stopScan()" style="display:none; margin-top:10px; max-width:200px; margin-left:auto; margin-right:auto;">
+                        Tutup Kamera
+                    </button>
                 </div>
 
                 <!-- Area Hasil Scan -->
@@ -409,11 +434,9 @@
 
     <script>
         // --- 1. STATE MANAGEMENT & SETTINGS ---
-        let config = {
-            sheetUrl: ''
-        };
-
-        // Mock Data Database (Simulasi Google Sheet jika belum ada link)
+        let config = { sheetUrl: '' };
+        
+        // Mock Data Database (Simulasi Google Sheet)
         let mockDB = {
             MBARANG: [
                 {KODE: "BRG001", NAMA: "Kemeja Batik", KELOMPOK: "Pakaian", JENIS: "Atasan", WARNA: "Coklat", UKURAN: "L", CATATAN: "Motif Solo", MEDSOS: "@batik_jaya"},
@@ -421,7 +444,7 @@
             ],
             MHARGA: [
                 {KODE: "BRG001", HARGADASAR: 50000, DISKON: 0, PAJAK: 0, MARGIN: 20, HARGAJUAL: 60000},
-                {KODE: "BRG002", HARGADASAR: 100000, DISKON: 5, PAJAK: 10, MARGIN: 30, HARGAJUAL: 125000} // 100rb + 30rb - 5rb - 10rb = 115rb? (Formula sesuai prompt)
+                {KODE: "BRG002", HARGADASAR: 100000, DISKON: 5, PAJAK: 10, MARGIN: 30, HARGAJUAL: 125000} 
             ],
             MINV: [
                 {KODE: "BRG001", STOK: 50},
@@ -437,19 +460,16 @@
         });
 
         // --- 2. NAVIGASI & UI ---
-        function toggleMenu() {
-            document.getElementById('mainMenu').classList.toggle('active');
-        }
+        function toggleMenu() { document.getElementById('mainMenu').classList.toggle('active'); }
 
         function navTo(screenId) {
-            // Sembunyikan semua section
             document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
-            // Tampilkan section target
             document.getElementById(screenId).classList.add('active');
-            // Tutup menu
             document.getElementById('mainMenu').classList.remove('active');
             
-            // Logika spesifik per halaman
+            // Pastikan kamera dimatikan jika pindah layar
+            if(screenId !== 'beranda') stopScan();
+
             if(screenId === 'data-harga') populateDropdown('h-kode');
             if(screenId === 'data-inventory') populateDropdown('i-kode');
             if(screenId === 'data-barang') {
@@ -459,10 +479,7 @@
         }
 
         function keluarApp() {
-            if(confirm("Apakah Anda yakin ingin keluar dari aplikasi?")) {
-                // Di web asli, kita hanya tutup window atau reload
-                window.location.reload();
-            }
+            if(confirm("Apakah Anda yakin ingin keluar?")) { window.location.reload(); }
         }
 
         function showToast(message, type = 'success') {
@@ -471,58 +488,157 @@
             toast.className = `toast ${type}`;
             toast.innerText = message;
             container.appendChild(toast);
-            
-            // Trigger reflow
-            void toast.offsetWidth;
-            toast.classList.add('show');
-
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
+            void toast.offsetWidth; toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3000);
         }
 
-        // --- 3. PENGATURAN (Settings) ---
-        function loadSettings() {
-            // Cek localStorage
-            const storedUrl = localStorage.getItem('g_sheet_url');
-            if (storedUrl) {
-                config.sheetUrl = storedUrl;
-                document.getElementById('set-link').value = storedUrl;
+        // --- 3. LOGIKA SCANNER (REAL) ---
+        let html5QrcodeScanner = null;
+        let isScanning = false;
+        let scannedCode = "";
+
+        function onScanSuccess(decodedText, decodedResult) {
+            // Handle scan sukses
+            // alert(`Scan result: ${decodedText}`);
+            stopScan(); // Matikan kamera setelah dapat hasil
+            processScanResult(decodedText);
+        }
+
+        function onScanFailure(error) {
+            // Handle scan error (frame biasa, abaikan console log agar tidak spam)
+            // console.warn(`Code scan error = ${error}`);
+        }
+
+        function startScan() {
+            document.getElementById('scan-result').style.display = 'none';
+            document.getElementById('reader').style.display = 'block';
+            document.getElementById('btn-stop-scan').style.display = 'block';
+            document.getElementById('scan-status').innerText = "Kamera aktif... Arahkan ke barcode.";
+            document.getElementById('btn-scan-trigger').style.display = 'none';
+
+            if (!isScanning) {
+                html5QrcodeScanner = new Html5Qrcode("reader");
+                const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+                
+                // Mencoba menggunakan kamera belakang (environment)
+                html5QrcodeScanner.start({ facingMode: "environment" }, config, onScanSuccess, onScanFailure)
+                .then(() => {
+                    isScanning = true;
+                    console.log("Camera started");
+                })
+                .catch(err => {
+                    showToast("Gagal membuka kamera: " + err, "error");
+                    stopScan();
+                });
             }
         }
 
+        function stopScan() {
+            if (html5QrcodeScanner && isScanning) {
+                html5QrcodeScanner.stop().then(() => {
+                    isScanning = false;
+                    html5QrcodeScanner.clear();
+                    document.getElementById('reader').style.display = 'none';
+                    document.getElementById('btn-stop-scan').style.display = 'none';
+                    document.getElementById('scan-status').innerText = "";
+                    document.getElementById('btn-scan-trigger').style.display = 'flex'; // Kembalikan tombol scan besar
+                }).catch(err => {
+                    console.error("Failed to stop", err);
+                });
+            }
+        }
+
+        // --- 4. LOGIKA SCAN RESULT & TRANSAKSI ---
+        function processScanResult(code) {
+            scannedCode = code;
+            
+            const barang = mockDB.MBARANG.find(b => b.KODE === code);
+            const harga = mockDB.MHARGA.find(h => h.KODE === code);
+            const inv = mockDB.MINV.find(i => i.KODE === code);
+
+            if(barang) {
+                document.getElementById('res-kode').innerText = barang.KODE;
+                document.getElementById('res-nama').innerText = barang.NAMA;
+                document.getElementById('res-kelompok').innerText = barang.KELOMPOK || "-";
+                document.getElementById('res-jenis').innerText = barang.JENIS || "-";
+                document.getElementById('res-warna').innerText = barang.WARNA || "-";
+                document.getElementById('res-ukuran').innerText = barang.UKURAN || "-";
+                
+                if(harga) {
+                    document.getElementById('res-harga').innerText = "Rp " + harga.HARGAJUAL.toLocaleString('id-ID');
+                } else {
+                    document.getElementById('res-harga').innerText = "Rp 0 (Belum set harga)";
+                }
+
+                if(inv) {
+                    document.getElementById('res-stok').innerText = inv.STOK;
+                } else {
+                    document.getElementById('res-stok').innerText = 0;
+                }
+
+                document.getElementById('scan-result').style.display = 'block';
+                document.getElementById('scan-status').innerText = "Berhasil Scan: " + code;
+            } else {
+                showToast("Data Barang tidak ditemukan di database!", "error");
+                // Fallback: Tampilkan kode saja untuk testing jika belum ada di DB
+                document.getElementById('res-kode').innerText = code;
+                document.getElementById('res-nama').innerText = "Baru (Belum Terdaftar)";
+                document.getElementById('scan-result').style.display = 'block';
+            }
+        }
+
+        function cancelTransaction() {
+            document.getElementById('scan-result').style.display = 'none';
+            document.getElementById('scan-status').innerText = "";
+            scannedCode = "";
+        }
+
+        async function processTransaction() {
+            if(!scannedCode) return;
+
+            const inv = mockDB.MINV.find(i => i.KODE === scannedCode);
+            const currentStock = inv ? inv.STOK : 0;
+            const newStock = currentStock - 1;
+
+            if(newStock < 0) {
+                showToast("Stok tidak mencukupi!", "error");
+                return;
+            }
+
+            const transData = {
+                KODE: scannedCode,
+                TANGGAL: new Date().toISOString(),
+                TAMBAH: 0, KURANG: 1, STOK: newStock,
+                NAMATRANSAKSI: "BELI", CATATAN: "Transaksi Scan"
+            };
+
+            const idx = mockDB.MINV.findIndex(i => i.KODE === scannedCode);
+            if(idx >= 0) mockDB.MINV[idx] = {KODE: scannedCode, STOK: newStock};
+            else mockDB.MINV.push({KODE: scannedCode, STOK: newStock});
+
+            console.log("Transaksi disimpan:", transData);
+            showToast("Transaksi BERHASIL disimpan!");
+
+            cancelTransaction();
+            document.getElementById('btn-scan-trigger').style.display = 'flex';
+        }
+
+        // --- 5. FUNGSI FORM & DATA (Sama seperti sebelumnya) ---
         function simpanPengaturan() {
             const link = document.getElementById('set-link').value;
             config.sheetUrl = link;
             localStorage.setItem('g_sheet_url', link);
-            
-            // Buat file setting.txt dan unduh (Simulasi save ke folder lokal)
             const blob = new Blob([link], { type: 'text/plain' });
             const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'setting.txt';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            
-            showToast("Pengaturan disimpan & setting.txt diunduh!");
+            const a = document.createElement('a'); a.href = url; a.download = 'setting.txt';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            showToast("Pengaturan disimpan!");
         }
 
-        // --- 4. LAYAR DATA BARANG ---
         function autoFillBarang(triggerBy) {
             const kodeVal = document.getElementById('b-kode').value;
-            const namaVal = document.getElementById('b-nama').value;
-
-            // Logika pencarian (Mock Search)
-            // Jika KODE dan NAMA terisi, cari data presisi
-            // Jika salah satu terisi, cari kemiripan (contains) untuk suggest
-            
-            // Untuk demo ini: Kita cari di mockDB jika KODE persis sama
             const found = mockDB.MBARANG.find(b => b.KODE === kodeVal);
-            
-            if (found) {
+            if (found && triggerBy === 'kode') {
                 document.getElementById('b-nama').value = found.NAMA;
                 document.getElementById('b-kelompok').value = found.KELOMPOK || '';
                 document.getElementById('b-jenis').value = found.JENIS || '';
@@ -537,17 +653,10 @@
             e.preventDefault();
             const kode = document.getElementById('b-kode').value;
             const nama = document.getElementById('b-nama').value;
+            if(!kode || !nama) { showToast("KODE dan NAMA wajib diisi!", "error"); return; }
             
-            if(!kode || !nama) {
-                showToast("KODE dan NAMA wajib diisi!", "error");
-                return;
-            }
-
-            // Simulasi kirim ke Google Sheet
-            // Di sini kita update mockDB
             const newData = {
-                KODE: kode,
-                NAMA: nama,
+                KODE: kode, NAMA: nama,
                 KELOMPOK: document.getElementById('b-kelompok').value,
                 JENIS: document.getElementById('b-jenis').value,
                 WARNA: document.getElementById('b-warna').value,
@@ -557,28 +666,19 @@
                 TANGGAL: new Date().toISOString()
             };
 
-            // Cek update atau insert baru di mock
             const idx = mockDB.MBARANG.findIndex(b => b.KODE === kode);
-            if(idx >= 0) mockDB.MBARANG[idx] = newData;
-            else mockDB.MBARANG.push(newData);
+            if(idx >= 0) mockDB.MBARANG[idx] = newData; else mockDB.MBARANG.push(newData);
 
-            console.log("Simpan ke MBARANG:", newData);
             showToast("Data Barang berhasil disimpan!");
-            
-            // Reset & Focus
-            e.target.reset();
-            document.getElementById('b-kode').focus();
+            e.target.reset(); document.getElementById('b-kode').focus();
         }
 
-        // --- 5. LAYAR DATA HARGA ---
         function populateDropdown(elementId) {
             const select = document.getElementById(elementId);
             select.innerHTML = '<option value="">-- Pilih Barang --</option>';
-            // Ambil data dari MBARANG
             mockDB.MBARANG.forEach(item => {
                 const opt = document.createElement('option');
-                opt.value = item.KODE;
-                opt.text = `${item.KODE} - ${item.NAMA}`;
+                opt.value = item.KODE; opt.text = `${item.KODE} - ${item.NAMA}`;
                 select.appendChild(opt);
             });
         }
@@ -586,12 +686,8 @@
         function loadDataHargaByKode() {
             const kode = document.getElementById('h-kode').value;
             setDateTimeNow('h-tanggal');
-
             if(!kode) return;
-
-            // Cari data harga terakhir
             const harga = mockDB.MHARGA.find(h => h.KODE === kode);
-            
             if(harga) {
                 document.getElementById('h-hargadasar').value = harga.HARGADASAR;
                 document.getElementById('h-diskon').value = harga.DISKON;
@@ -599,13 +695,11 @@
                 document.getElementById('h-margin').value = harga.MARGIN;
                 hitungHargaJual();
             } else {
-                // Reset form jika kode baru
                 document.getElementById('h-hargadasar').value = '';
                 document.getElementById('h-diskon').value = 0;
                 document.getElementById('h-pajak').value = 0;
                 document.getElementById('h-margin').value = 0;
                 document.getElementById('h-hargajual').value = 0;
-                document.getElementById('h-catatan').value = '';
             }
         }
 
@@ -614,23 +708,17 @@
             const diskon = parseFloat(document.getElementById('h-diskon').value) || 0;
             const pajak = parseFloat(document.getElementById('h-pajak').value) || 0;
             const margin = parseFloat(document.getElementById('h-margin').value) || 0;
-
-            // Rumus: HARGA JUAL = DASAR + MARGIN - DISKON - PAJAK
-            // Sesuai prompt: "besar prosentasi DIKALI HARGADASAR"
             const valMargin = dasar * (margin / 100);
             const valDiskon = dasar * (diskon / 100);
             const valPajak = dasar * (pajak / 100);
-
             const jual = dasar + valMargin - valDiskon - valPajak;
             document.getElementById('h-hargajual').value = Math.round(jual);
         }
 
         async function simpanHarga(e) {
             e.preventDefault();
-            
             const newData = {
-                KODE: document.getElementById('h-kode').value,
-                TANGGAL: new Date().toISOString(),
+                KODE: document.getElementById('h-kode').value, TANGGAL: new Date().toISOString(),
                 HARGADASAR: parseFloat(document.getElementById('h-hargadasar').value),
                 DISKON: parseFloat(document.getElementById('h-diskon').value),
                 PAJAK: parseFloat(document.getElementById('h-pajak').value),
@@ -638,30 +726,18 @@
                 HARGAJUAL: parseFloat(document.getElementById('h-hargajual').value),
                 CATATAN: document.getElementById('h-catatan').value
             };
-
-            // Update Mock
             const idx = mockDB.MHARGA.findIndex(h => h.KODE === newData.KODE);
-            if(idx >= 0) mockDB.MHARGA[idx] = newData;
-            else mockDB.MHARGA.push(newData);
-
-            console.log("Simpan ke MHARGA:", newData);
+            if(idx >= 0) mockDB.MHARGA[idx] = newData; else mockDB.MHARGA.push(newData);
             showToast("Data Harga berhasil disimpan!");
-
-            e.target.reset();
-            document.getElementById('h-kode').focus();
+            e.target.reset(); document.getElementById('h-kode').focus();
         }
 
-        // --- 6. LAYAR DATA INVENTORY ---
         function loadDataInventoryByKode() {
             const kode = document.getElementById('i-kode').value;
             setDateTimeNow('i-tanggal');
-
             if(!kode) return;
-
-            // Cari stok terakhir di MINV
             const inv = mockDB.MINV.find(i => i.KODE === kode);
             const stokAkhir = inv ? inv.STOK : 0;
-
             document.getElementById('i-stok-awal').value = stokAkhir;
             document.getElementById('i-tambah').value = 0;
             document.getElementById('i-stok').value = stokAkhir;
@@ -670,158 +746,32 @@
         function hitungStokAkhir() {
             const stokAwal = parseFloat(document.getElementById('i-stok-awal').value) || 0;
             const tambah = parseFloat(document.getElementById('i-tambah').value) || 0;
-            
-            const stokAkhir = stokAwal + tambah;
-            document.getElementById('i-stok').value = stokAkhir;
+            document.getElementById('i-stok').value = stokAwal + tambah;
         }
 
         async function simpanInventory(e) {
             e.preventDefault();
             const kode = document.getElementById('i-kode').value;
-            
             const newData = {
-                KODE: kode,
-                TANGGAL: new Date().toISOString(),
-                TAMBAH: parseInt(document.getElementById('i-tambah').value),
-                KURANG: 0, // Selalu 0 karena disabled di layar inventory
+                KODE: kode, TANGGAL: new Date().toISOString(),
+                TAMBAH: parseInt(document.getElementById('i-tambah').value), KURANG: 0,
                 STOK: parseInt(document.getElementById('i-stok').value),
-                NAMATRANSAKSI: "TAMBAHSTOK",
-                CATATAN: document.getElementById('i-catatan').value
+                NAMATRANSAKSI: "TAMBAHSTOK", CATATAN: document.getElementById('i-catatan').value
             };
-
-            // Update Mock Inventory (Update latest stock)
             const idx = mockDB.MINV.findIndex(i => i.KODE === kode);
-            if(idx >= 0) mockDB.MINV[idx] = {KODE: kode, STOK: newData.STOK}; // Update stok terakhir
+            if(idx >= 0) mockDB.MINV[idx] = {KODE: kode, STOK: newData.STOK};
             else mockDB.MINV.push({KODE: kode, STOK: newData.STOK});
 
-            console.log("Simpan ke MINV:", newData);
             showToast("Data Inventory berhasil disimpan!");
-
-            e.target.reset();
-            document.getElementById('i-kode').focus();
+            e.target.reset(); document.getElementById('i-kode').focus();
         }
 
-        // --- 7. LAYAR UTAMA (SCAN & TRANSAKSI) ---
-        let scannedCode = "";
-
-        function startScan() {
-            // Simulasi Scan Barcode
-            document.getElementById('scan-status').innerText = "Memindai...";
-            
-            // Di real app, ini memanggil library QR scanner. 
-            // Di sini kita simulasi delay 1 detik dan mengambil data acak dari mockDB
-            setTimeout(() => {
-                // Ambil barang pertama dari mock sebagai demo
-                const randomItem = mockDB.MBARANG[0]; 
-                scannedCode = randomItem.KODE;
-                
-                document.getElementById('scan-status').innerText = "Berhasil Scan: " + scannedCode;
-                
-                // Ambil data KODE dari scan
-                processScanResult(scannedCode);
-            }, 800);
-        }
-
-        function processScanResult(code) {
-            // 1. Cari Data Barang (MBARANG)
-            const barang = mockDB.MBARANG.find(b => b.KODE === code);
-            // 2. Cari Data Harga (MHARGA)
-            const harga = mockDB.MHARGA.find(h => h.KODE === code);
-            // 3. Cari Data Inventory (MINV) - stok
-            const inv = mockDB.MINV.find(i => i.KODE === code);
-
-            if(barang) {
-                // Isi Bilah Isian di Layar Utama
-                document.getElementById('res-kode').innerText = barang.KODE;
-                document.getElementById('res-nama').innerText = barang.NAMA;
-                document.getElementById('res-kelompok').innerText = barang.KELOMPOK || "-";
-                document.getElementById('res-jenis').innerText = barang.JENIS || "-";
-                document.getElementById('res-warna').innerText = barang.WARNA || "-";
-                document.getElementById('res-ukuran').innerText = barang.UKURAN || "-";
-                
-                // Harga Jual
-                if(harga) {
-                    document.getElementById('res-harga').innerText = "Rp " + harga.HARGAJUAL.toLocaleString('id-ID');
-                } else {
-                    document.getElementById('res-harga').innerText = "Rp 0 (Belum set harga)";
-                }
-
-                // Stok
-                if(inv) {
-                    document.getElementById('res-stok').innerText = inv.STOK;
-                } else {
-                    document.getElementById('res-stok').innerText = 0;
-                }
-
-                // Tampilkan area hasil
-                document.getElementById('scan-result').style.display = 'block';
-            } else {
-                showToast("Data Barang tidak ditemukan!", "error");
-                document.getElementById('scan-result').style.display = 'none';
-            }
-        }
-
-        function cancelTransaction() {
-            document.getElementById('scan-result').style.display = 'none';
-            document.getElementById('scan-status').innerText = "";
-            scannedCode = "";
-        }
-
-        async function processTransaction() {
-            if(!scannedCode) return;
-
-            // Logika Transaksi:
-            // 1. Temukan baris terakhir MINV untuk ambil STOK
-            const inv = mockDB.MINV.find(i => i.KODE === scannedCode);
-            const currentStock = inv ? inv.STOK : 0;
-            const newStock = currentStock - 1;
-
-            if(newStock < 0) {
-                showToast("Stok tidak mencukupi!", "error");
-                return;
-            }
-
-            // 2. Siapkan Data Transaksi
-            const transData = {
-                KODE: scannedCode,
-                TANGGAL: new Date().toISOString(),
-                TAMBAH: 0,
-                KURANG: 1,
-                STOK: newStock,
-                NAMATRANSAKSI: "BELI",
-                CATATAN: "Transaksi dari Scan"
-            };
-
-            // 3. Simpan ke MINV (Simulasi)
-            const idx = mockDB.MINV.findIndex(i => i.KODE === scannedCode);
-            if(idx >= 0) mockDB.MINV[idx] = {KODE: scannedCode, STOK: newStock};
-            else mockDB.MINV.push({KODE: scannedCode, STOK: newStock});
-
-            console.log("Transaksi disimpan:", transData);
-            showToast("Transaksi BERHASIL disimpan!");
-
-            // 4. Clear & Focus
-            cancelTransaction();
-            // Fokus kembali ke tombol scan (secara visual reset)
-        }
-
-        // --- UTILITIES ---
         function setDateTimeNow(elementId) {
             const now = new Date();
-            // Format: YYYY-MM-DD HH:MM
             const dateStr = now.toISOString().slice(0,10) + ' ' + now.toTimeString().slice(0,5);
             const el = document.getElementById(elementId);
             if(el) el.value = dateStr;
         }
-
-        /*
-         * CATATAN PENGEMBANGAN (GOOGLE APPS SCRIPT):
-         * Untuk menghubungkan ke Google Sheet sungguhan:
-         * 1. Buat Google Apps Script dengan fungsi doGet(e) dan doPost(e).
-         * 2. doPost harus menangani parameter 'action' ('simpan_barang', 'ambil_barang', dsb).
-         * 3. Ganti fungsi mockDB di atas dengan fetch(config.sheetUrl, { method: 'POST', body: ... }).
-         * 4. Parse JSON response dan update DOM.
-         */
     </script>
 </body>
 </html>

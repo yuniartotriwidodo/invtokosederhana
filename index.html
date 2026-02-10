@@ -59,7 +59,7 @@
                 <div class="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
                 <h2 class="text-lg font-medium opacity-80 mb-6">Kasir Digital</h2>
                 
-                <div id="reader" class="bg-black rounded-2xl overflow-hidden mx-auto mb-4 hidden border-4 border-white/20" style="width: 100%;"></div>
+                <div id="reader" class="bg-black rounded-2xl overflow-hidden mx-auto mb-4 hidden border-4 border-white/20" style="width: 100%; min-height: 250px;"></div>
                 
                 <button id="btnScan" onclick="startScan()" class="bg-white text-blue-600 w-24 h-24 rounded-full shadow-2xl flex items-center justify-center mx-auto text-4xl hover:scale-105 active:scale-95 transition-all ring-8 ring-white/10 group">
                     <i class="fas fa-qrcode group-hover:rotate-12 transition-transform"></i>
@@ -69,36 +69,54 @@
 
             <div class="bg-white rounded-3xl shadow-sm p-6 border border-slate-200">
                 <div class="space-y-4">
-                    <div class="flex items-center space-x-4 mb-4">
-                        <div id="transPhotoPlaceholder" class="h-20 w-20 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 shrink-0 border-2 border-dashed border-slate-200">
-                            <i class="fas fa-image text-2xl"></i>
+                    <!-- Informasi Barang & Foto -->
+                    <div class="flex items-start space-x-4 mb-4 border-b pb-4 border-slate-50">
+                        <div id="transPhotoPlaceholder" class="h-24 w-24 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 shrink-0 border-2 border-dashed border-slate-200">
+                            <i class="fas fa-image text-3xl"></i>
                         </div>
-                        <img id="transPhoto" class="h-20 w-20 object-cover rounded-2xl border-2 border-blue-100 hidden shrink-0 shadow-sm">
-                        <div class="flex-1">
-                            <input type="text" id="transNama" class="w-full text-lg font-bold text-slate-800 placeholder:text-slate-300 bg-transparent border-none focus:ring-0 p-0" placeholder="Nama Barang..." readonly>
-                            <input type="text" id="transKategori" class="text-xs font-semibold text-blue-500 uppercase tracking-wider bg-transparent border-none focus:ring-0 p-0" placeholder="KATEGORI" readonly>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Stok Tersedia</label>
-                            <input type="text" id="transStok" class="w-full bg-transparent text-lg font-bold text-slate-700" readonly value="0">
-                        </div>
-                        <div class="bg-green-50 p-3 rounded-2xl border border-green-100">
-                            <label class="block text-[10px] font-bold text-green-600 uppercase mb-1">Harga Satuan</label>
-                            <div class="flex items-center">
-                                <span class="text-green-600 font-bold mr-1">Rp</span>
-                                <input type="text" id="transHarga" class="w-full bg-transparent text-lg font-black text-green-700" readonly value="0">
+                        <img id="transPhoto" class="h-24 w-24 object-cover rounded-2xl border-2 border-blue-100 hidden shrink-0 shadow-sm">
+                        <div class="flex-1 overflow-hidden">
+                            <input type="text" id="transNama" class="w-full text-lg font-bold text-slate-800 bg-transparent border-none focus:ring-0 p-0 truncate" placeholder="Nama Barang..." readonly>
+                            <div class="flex flex-wrap gap-1 mt-1">
+                                <span id="badgeKategori" class="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-md uppercase hidden"></span>
+                                <span id="badgeJenis" class="px-2 py-0.5 bg-purple-50 text-purple-600 text-[10px] font-bold rounded-md uppercase hidden"></span>
                             </div>
+                            <p id="transKodeDisplay" class="text-xs text-slate-400 mt-1 font-mono uppercase"></p>
                         </div>
                     </div>
 
-                    <div class="flex space-x-3 pt-4">
-                        <button onclick="cancelTrans()" class="flex-1 py-4 px-4 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition active:scale-95">BATAL</button>
-                        <button onclick="processTrans()" class="flex-[2] py-4 px-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition active:scale-95 flex items-center justify-center space-x-2">
-                            <span>PROSES</span>
-                            <i class="fas fa-chevron-right text-xs opacity-50"></i>
+                    <!-- Detail Spesifikasi -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <label class="block text-[9px] font-bold text-slate-400 uppercase">Warna / Ukuran</label>
+                            <p id="transSpec" class="text-xs font-semibold text-slate-700 mt-1">-</p>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <label class="block text-[9px] font-bold text-slate-400 uppercase">Stok Tersedia</label>
+                            <p id="transStok" class="text-sm font-bold text-slate-700 mt-1">0</p>
+                        </div>
+                    </div>
+
+                    <!-- Catatan -->
+                    <div class="bg-amber-50 p-3 rounded-xl border border-amber-100">
+                        <label class="block text-[9px] font-bold text-amber-600 uppercase">Catatan</label>
+                        <p id="transCatatan" class="text-[11px] text-amber-800 mt-1 italic">Tidak ada catatan</p>
+                    </div>
+
+                    <!-- Harga -->
+                    <div class="bg-green-600 p-4 rounded-2xl shadow-lg shadow-green-100">
+                        <label class="block text-[10px] font-bold text-white/70 uppercase mb-1">Harga Satuan</label>
+                        <div class="flex items-center text-white">
+                            <span class="text-lg font-bold mr-1">Rp</span>
+                            <input type="text" id="transHarga" class="w-full bg-transparent text-2xl font-black focus:outline-none" readonly value="0">
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-3 pt-2">
+                        <button onclick="cancelTrans()" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition active:scale-95">BATAL</button>
+                        <button onclick="processTrans()" class="flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition active:scale-95 flex items-center justify-center space-x-2">
+                            <span>PROSES JUAL</span>
+                            <i class="fas fa-check-circle"></i>
                         </button>
                     </div>
                 </div>
@@ -119,26 +137,36 @@
                 </h2>
                 <form onsubmit="event.preventDefault(); saveBarang();" class="space-y-4">
                     <div class="space-y-2">
-                        <label class="text-xs font-bold text-slate-500 uppercase ml-1">Informasi Dasar</label>
-                        <input type="text" id="brgKode" placeholder="Kode Barcode / SKU" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition" required>
-                        <input type="text" id="brgNama" placeholder="Nama Produk Lengkap" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition" required>
+                        <label class="text-xs font-bold text-slate-500 uppercase ml-1">Informasi Utama</label>
+                        <div class="flex space-x-2">
+                            <input type="text" id="brgKode" placeholder="Kode Barcode" class="flex-1 p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-100 outline-none transition" required>
+                            <button type="button" onclick="scanToField('brgKode')" class="bg-slate-100 p-4 rounded-2xl text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                        <input type="text" id="brgNama" placeholder="Nama Produk" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-100 outline-none transition" required>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
                         <input type="text" id="brgKelompok" placeholder="Kategori" class="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm">
-                        <input type="text" id="brgJenis" placeholder="Jenis/Tipe" class="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm">
+                        <input type="text" id="brgJenis" placeholder="Jenis" class="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm">
                     </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="text" id="brgWarna" placeholder="Warna" class="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm">
+                        <input type="text" id="brgUkuran" placeholder="Ukuran" class="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm">
+                    </div>
+
+                    <textarea id="brgCatatan" placeholder="Catatan Tambahan..." class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm h-20 outline-none"></textarea>
 
                     <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100">
                         <label class="block text-center cursor-pointer group">
                             <div id="brgPreviewContainer" class="mb-2 hidden">
                                 <img id="brgPreview" class="w-full h-48 object-cover rounded-xl shadow-inner">
-                                <p class="text-[10px] text-blue-500 mt-2 font-bold">KLIK UNTUK GANTI FOTO</p>
                             </div>
                             <div id="brgPhotoPrompt">
                                 <i class="fas fa-camera text-3xl text-blue-500 mb-2 float-icon"></i>
-                                <span class="block text-blue-600 text-sm font-bold uppercase tracking-tight">Ambil Foto Produk</span>
-                                <span class="text-[10px] text-blue-400 italic">Otomatis dikecilkan agar hemat memori</span>
+                                <span class="block text-blue-600 text-sm font-bold uppercase">Foto Produk</span>
                             </div>
                             <input type="file" id="brgPhoto" accept="image/*" class="hidden" onchange="processAndPreviewImage(this)">
                         </label>
@@ -170,8 +198,6 @@
             </div>
         </div>
 
-        <!-- Tambahkan Screen lainnya (Harga & Inventory) dengan struktur serupa jika diperlukan -->
-
     </main>
 
     <script>
@@ -197,6 +223,12 @@
             target.classList.remove('hidden-screen');
             setTimeout(() => target.classList.add('active-screen'), 50);
 
+            // Cleanup scanner if active
+            if(html5QrcodeScanner) {
+                try { html5QrcodeScanner.stop(); } catch(e){}
+                document.getElementById('reader').classList.add('hidden');
+            }
+
             if(screenName === 'home') resetTransForm();
         }
 
@@ -204,7 +236,7 @@
             document.getElementById('mobileMenu').classList.toggle('hidden');
         });
 
-        // --- IMAGE COMPRESSION LOGIC (CANVAS) ---
+        // --- IMAGE COMPRESSION LOGIC ---
         function processAndPreviewImage(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
@@ -212,19 +244,14 @@
                     const img = new Image();
                     img.src = e.target.result;
                     img.onload = function() {
-                        // Max Dimensions (E.g. 400px)
                         const maxW = 400;
                         const scale = maxW / img.width;
                         const canvas = document.createElement('canvas');
                         canvas.width = maxW;
                         canvas.height = img.height * scale;
-                        
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        
-                        // Compress to JPEG with 0.6 quality to stay under 50kb
                         const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
-                        
                         base64Image = compressedBase64;
                         document.getElementById('brgPreview').src = compressedBase64;
                         document.getElementById('brgPreviewContainer').classList.remove('hidden');
@@ -241,18 +268,16 @@
             Swal.fire({ title: 'Menyimpan...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             
             try {
-                // Post as text/plain to bypass CORS Preflight on GAS
-                await fetch(API_URL, {
+                const response = await fetch(API_URL, {
                     method: 'POST',
                     mode: 'no-cors', 
                     body: JSON.stringify({ sheet: sheetName, data: rowData }),
                     headers: { "Content-Type": "text/plain" },
                 });
-
                 Swal.fire({ icon: 'success', title: 'Berhasil', timer: 1000, showConfirmButton: false });
                 if(onSuccess) onSuccess();
             } catch (error) {
-                Swal.fire('Oops', 'Cek koneksi internet', 'error');
+                Swal.fire('Oops', 'Gagal kirim data', 'error');
             }
         }
 
@@ -262,7 +287,9 @@
                 document.getElementById('brgNama').value,
                 document.getElementById('brgKelompok').value,
                 document.getElementById('brgJenis').value,
-                "", "", "", "", // Placeholder Warna, Ukuran, Catatan, Medsos
+                document.getElementById('brgWarna').value,
+                document.getElementById('brgUkuran').value,
+                document.getElementById('brgCatatan').value,
                 base64Image,
                 getNow()
             ];
@@ -273,54 +300,88 @@
             });
         }
 
-        // --- SCANNER & TRANSACTION ---
+        // --- SCANNER LOGIC FIX ---
         function startScan() {
             const readerDiv = document.getElementById('reader');
-            readerDiv.classList.remove('hidden');
+            readerDiv.classList.toggle('hidden');
             
+            if(readerDiv.classList.contains('hidden')) {
+                if(html5QrcodeScanner) html5QrcodeScanner.stop();
+                return;
+            }
+
             if(!html5QrcodeScanner) {
                 html5QrcodeScanner = new Html5Qrcode("reader");
             }
 
             html5QrcodeScanner.start(
                 { facingMode: "environment" }, 
-                { fps: 15, qrbox: { width: 250, height: 250 } },
+                { fps: 15, qrbox: { width: 220, height: 220 } },
                 (text) => {
                     html5QrcodeScanner.stop();
                     readerDiv.classList.add('hidden');
                     fetchProduct(text);
                 }
-            ).catch(() => Swal.fire('Error', 'Kamera tidak aktif', 'error'));
+            ).catch(err => {
+                console.error(err);
+                Swal.fire('Error Kamera', 'Pastikan izin kamera diberikan dan menggunakan HTTPS', 'error');
+                readerDiv.classList.add('hidden');
+            });
         }
 
+        // --- FETCH PRODUCT DATA ---
         async function fetchProduct(kode) {
+            if(!API_URL) return Swal.fire('Error', 'Set URL di Pengaturan', 'warning');
             Swal.fire({ title: 'Mencari...', didOpen: () => Swal.showLoading() });
+            
             try {
                 const res = await fetch(`${API_URL}?op=searchBarang&q=${kode}`);
                 const results = await res.json();
                 
                 if(results.length > 0) {
                     const item = results[0];
+                    // Mapping Fields
                     document.getElementById('transKode').value = item.KODE;
+                    document.getElementById('transKodeDisplay').innerText = `Kode: ${item.KODE}`;
                     document.getElementById('transNama').value = item.NAMA;
-                    document.getElementById('transKategori').value = item.KELOMPOK || 'UMUM';
+                    
+                    // Badges
+                    if(item.KELOMPOK) {
+                        document.getElementById('badgeKategori').innerText = item.KELOMPOK;
+                        document.getElementById('badgeKategori').classList.remove('hidden');
+                    }
+                    if(item.JENIS) {
+                        document.getElementById('badgeJenis').innerText = item.JENIS;
+                        document.getElementById('badgeJenis').classList.remove('hidden');
+                    }
+
+                    // Spec & Stock
+                    const spec = `${item.WARNA || '-'} / ${item.UKURAN || '-'}`;
+                    document.getElementById('transSpec').innerText = spec;
+                    document.getElementById('transStok').innerText = item.STOK || 0;
+                    document.getElementById('transCatatan').innerText = item.CATATAN || 'Tidak ada catatan';
+                    
+                    // Price
                     document.getElementById('transHarga').value = formatIDR(item.HARGAJUAL || 0);
-                    document.getElementById('transStok').value = item.STOK || 0;
                     document.getElementById('rawPrice').value = item.HARGAJUAL || 0;
                     document.getElementById('rawStock').value = item.STOK || 0;
 
+                    // Photo
                     if(item.PHOTO && item.PHOTO.length > 100) {
                         document.getElementById('transPhoto').src = item.PHOTO;
                         document.getElementById('transPhoto').classList.remove('hidden');
                         document.getElementById('transPhotoPlaceholder').classList.add('hidden');
+                    } else {
+                        document.getElementById('transPhoto').classList.add('hidden');
+                        document.getElementById('transPhotoPlaceholder').classList.remove('hidden');
                     }
                     Swal.close();
                 } else {
-                    Swal.fire('Tidak Ada', 'Barang belum terdaftar', 'info');
+                    Swal.fire('Tidak Ditemukan', `Kode ${kode} belum terdaftar`, 'info');
                     resetTransForm();
                 }
             } catch (e) {
-                Swal.fire('Error', 'Gagal koneksi ke server', 'error');
+                Swal.fire('Error Server', 'Pastikan Backend Google Script mendukung operasi searchBarang', 'error');
             }
         }
 
@@ -329,18 +390,24 @@
             if(!kode) return;
 
             const newStok = parseInt(document.getElementById('rawStock').value) - 1;
-            const data = [ kode, getNow(), "", 1, newStok, "BELI", "Kasir App" ];
+            const data = [ kode, getNow(), "", 1, newStok, "JUAL", "Kasir Mobile" ];
 
             submitToSheet('MINV', data, () => {
-                Swal.fire('Sukses', 'Transaksi Berhasil', 'success');
+                Swal.fire('Berhasil', 'Transaksi penjualan dicatat', 'success');
                 resetTransForm();
             });
         }
 
         function resetTransForm() {
-            ['transKode', 'transNama', 'transKategori', 'transHarga', 'transStok', 'rawPrice', 'rawStock'].forEach(id => {
+            ['transNama', 'transKode', 'transHarga', 'rawPrice', 'rawStock'].forEach(id => {
                 document.getElementById(id).value = '';
             });
+            document.getElementById('transKodeDisplay').innerText = '';
+            document.getElementById('transSpec').innerText = '-';
+            document.getElementById('transStok').innerText = '0';
+            document.getElementById('transCatatan').innerText = 'Tidak ada catatan';
+            document.getElementById('badgeKategori').classList.add('hidden');
+            document.getElementById('badgeJenis').classList.add('hidden');
             document.getElementById('transPhoto').classList.add('hidden');
             document.getElementById('transPhotoPlaceholder').classList.remove('hidden');
         }
@@ -350,11 +417,13 @@
             if(!url.includes('google.com')) return Swal.fire('Format Salah', 'Gunakan URL Google Script', 'error');
             localStorage.setItem('tokoAppUrl', url);
             API_URL = url;
-            Swal.fire('Berhasil', 'Konfigurasi telah diperbarui', 'success');
+            Swal.fire('Berhasil', 'Konfigurasi disimpan', 'success');
         }
 
-        // Init
-        if(API_URL) document.getElementById('settingUrl').value = API_URL;
+        function cancelTrans() {
+            resetTransForm();
+            Swal.fire({ title: 'Dibatalkan', timer: 800, showConfirmButton: false });
+        }
     </script>
 </body>
 </html>

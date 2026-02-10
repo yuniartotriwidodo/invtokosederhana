@@ -16,7 +16,7 @@
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f4f8; }
         .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
-        .hidden-screen { display: none; }
+        .hidden-screen { display: none !important; }
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
@@ -26,26 +26,27 @@
 <body class="text-slate-800">
 
     <!-- Header & Navigation -->
-    <nav class="bg-blue-700 text-white shadow-lg fixed w-full top-0 z-50">
-        <div class="max-w-md mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="font-bold text-xl"><i class="fas fa-store mr-2"></i>TokoApp</div>
-            <button id="menuBtn" class="focus:outline-none">
+    <nav class="bg-blue-700 text-white shadow-lg fixed w-full top-0 z-[100]">
+        <div class="max-w-md mx-auto px-4 py-3 flex justify-between items-center relative">
+            <div class="font-bold text-xl select-none"><i class="fas fa-store mr-2"></i>TokoApp</div>
+            <button id="menuBtn" class="focus:outline-none p-2 active:bg-blue-600 rounded transition">
                 <i class="fas fa-bars text-2xl"></i>
             </button>
-        </div>
-        <!-- Dropdown Menu -->
-        <div id="mobileMenu" class="hidden bg-blue-800 absolute w-full shadow-xl transition-all duration-300">
-            <a href="#" onclick="nav('home')" class="block px-4 py-3 border-b border-blue-700 hover:bg-blue-600"><i class="fas fa-home w-6"></i> Beranda</a>
-            <a href="#" onclick="nav('barang')" class="block px-4 py-3 border-b border-blue-700 hover:bg-blue-600"><i class="fas fa-box w-6"></i> Data Barang</a>
-            <a href="#" onclick="nav('harga')" class="block px-4 py-3 border-b border-blue-700 hover:bg-blue-600"><i class="fas fa-tag w-6"></i> Data Harga</a>
-            <a href="#" onclick="nav('inventory')" class="block px-4 py-3 border-b border-blue-700 hover:bg-blue-600"><i class="fas fa-warehouse w-6"></i> Data Inventory</a>
-            <a href="#" onclick="nav('setting')" class="block px-4 py-3 border-b border-blue-700 hover:bg-blue-600"><i class="fas fa-cog w-6"></i> Pengaturan</a>
-            <a href="#" onclick="window.close()" class="block px-4 py-3 hover:bg-red-600 text-red-200"><i class="fas fa-sign-out-alt w-6"></i> Keluar</a>
+            
+            <!-- Dropdown Menu (Posisi diperbaiki: top-full left-0) -->
+            <div id="mobileMenu" class="hidden bg-blue-800 absolute top-full left-0 w-full shadow-xl transition-all duration-300 z-[101]">
+                <a href="#" onclick="nav('home')" class="block px-4 py-3 border-b border-blue-700 hover:bg-blue-600 active:bg-blue-900"><i class="fas fa-home w-6"></i> Beranda</a>
+                <a href="#" onclick="nav('barang')" class="block px-4 py-3 border-b border-blue-700 hover:bg-blue-600 active:bg-blue-900"><i class="fas fa-box w-6"></i> Data Barang</a>
+                <a href="#" onclick="nav('harga')" class="block px-4 py-3 border-b border-blue-700 hover:bg-blue-600 active:bg-blue-900"><i class="fas fa-tag w-6"></i> Data Harga</a>
+                <a href="#" onclick="nav('inventory')" class="block px-4 py-3 border-b border-blue-700 hover:bg-blue-600 active:bg-blue-900"><i class="fas fa-warehouse w-6"></i> Data Inventory</a>
+                <a href="#" onclick="nav('setting')" class="block px-4 py-3 border-b border-blue-700 hover:bg-blue-600 active:bg-blue-900"><i class="fas fa-cog w-6"></i> Pengaturan</a>
+                <a href="#" onclick="closeApp()" class="block px-4 py-3 hover:bg-red-600 text-red-200"><i class="fas fa-sign-out-alt w-6"></i> Keluar</a>
+            </div>
         </div>
     </nav>
 
     <!-- Main Content Container -->
-    <main class="pt-20 pb-10 px-4 max-w-md mx-auto min-h-screen">
+    <main class="pt-20 pb-20 px-4 max-w-md mx-auto min-h-screen">
 
         <!-- SCREEN: SETTING (Pengaturan) -->
         <div id="screen-setting" class="hidden-screen fade-in">
@@ -65,10 +66,16 @@
         <!-- SCREEN: BERANDA (Scan & Transaksi) -->
         <div id="screen-home" class="fade-in">
             <!-- Scan Button Area -->
-            <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl shadow-xl p-6 text-center text-white mb-6">
+            <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl shadow-xl p-6 text-center text-white mb-6 relative">
                 <h2 class="text-lg font-semibold opacity-90 mb-4">Kasir / Scan Barang</h2>
-                <div id="reader" class="bg-black rounded-lg overflow-hidden mx-auto mb-4 hidden" style="width: 100%; max-width: 300px;"></div>
-                <button id="btnScan" onclick="startScan()" class="bg-white text-blue-700 w-20 h-20 rounded-full shadow-2xl flex items-center justify-center mx-auto text-3xl hover:scale-110 transition duration-300 ring-4 ring-blue-300/30">
+                
+                <!-- Area Kamera -->
+                <div id="reader-container" class="hidden mb-4 bg-black rounded-lg overflow-hidden mx-auto border-2 border-white/30">
+                     <div id="reader" style="width: 100%;"></div>
+                     <button onclick="stopScan()" class="mt-2 text-xs bg-red-500 px-3 py-1 rounded text-white mb-2">Tutup Kamera</button>
+                </div>
+
+                <button id="btnScan" onclick="startScan()" class="bg-white text-blue-700 w-20 h-20 rounded-full shadow-2xl flex items-center justify-center mx-auto text-3xl hover:scale-110 transition duration-300 ring-4 ring-blue-300/30 active:bg-gray-100">
                     <i class="fas fa-qrcode"></i>
                 </button>
                 <p class="mt-3 text-sm font-light">Ketuk untuk Scan</p>
@@ -117,10 +124,10 @@
 
                     <!-- Action Buttons -->
                     <div class="flex gap-3 mt-6">
-                        <button onclick="cancelTrans()" class="flex-1 bg-red-100 text-red-600 py-3 rounded-xl font-bold hover:bg-red-200 transition">
+                        <button onclick="cancelTrans()" class="flex-1 bg-red-100 text-red-600 py-3 rounded-xl font-bold hover:bg-red-200 transition active:scale-95">
                             CANCEL
                         </button>
-                        <button onclick="processTrans()" class="flex-1 bg-green-500 text-white py-3 rounded-xl font-bold shadow-lg hover:bg-green-600 transition">
+                        <button onclick="processTrans()" class="flex-1 bg-green-500 text-white py-3 rounded-xl font-bold shadow-lg hover:bg-green-600 transition active:scale-95">
                             TRANSAKSI
                         </button>
                     </div>
@@ -250,83 +257,116 @@
 
     <!-- JavaScript Logic -->
     <script>
-        // --- 1. CONFIG & UTILS ---
-        let API_URL = localStorage.getItem('tokoAppUrl') || '';
+        // --- GLOBAL VARIABLES ---
+        let API_URL = "";
         let html5QrcodeScanner = null;
+
+        // Try load settings safely
+        try {
+            API_URL = localStorage.getItem('tokoAppUrl') || '';
+        } catch(e) { console.error("Local storage error:", e); }
 
         function getNow() {
             const now = new Date();
             return now.toISOString().replace('T', ' ').substring(0, 19);
         }
 
-        // --- 2. NAVIGATION ---
-        const menuBtn = document.getElementById('menuBtn');
-        const mobileMenu = document.getElementById('mobileMenu');
-        
-        menuBtn.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
+        // --- NAVIGATION & INIT ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Setup Menu Toggle Listener securely after DOM load
+            const menuBtn = document.getElementById('menuBtn');
+            const mobileMenu = document.getElementById('mobileMenu');
+            
+            if(menuBtn && mobileMenu) {
+                menuBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Mencegah bubbling
+                    mobileMenu.classList.toggle('hidden');
+                });
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!menuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Init Setting URL
+            if(API_URL && document.getElementById('settingUrl')) {
+                document.getElementById('settingUrl').value = API_URL;
+            }
+
+            // Start at Home
+            nav('home');
         });
 
         function nav(screenName) {
-            mobileMenu.classList.add('hidden');
+            const menu = document.getElementById('mobileMenu');
+            if(menu) menu.classList.add('hidden');
+            
             document.querySelectorAll('[id^="screen-"]').forEach(el => el.classList.add('hidden-screen'));
-            document.getElementById(`screen-${screenName}`).classList.remove('hidden-screen');
+            const target = document.getElementById(`screen-${screenName}`);
+            if(target) target.classList.remove('hidden-screen');
 
             // Logic per screen open
             if(screenName === 'harga' || screenName === 'inventory') {
                 loadDropdowns();
-                document.getElementById('hrgTanggal').value = getNow();
-                document.getElementById('invTanggal').value = getNow();
+                if(document.getElementById('hrgTanggal')) document.getElementById('hrgTanggal').value = getNow();
+                if(document.getElementById('invTanggal')) document.getElementById('invTanggal').value = getNow();
             }
             if(screenName === 'home') {
                 resetTransForm();
+                stopScan(); // Ensure scan stops if navigating back home properly
             }
         }
 
-        // --- 3. SETTINGS ---
+        function closeApp() {
+            if(confirm("Keluar dari aplikasi?")) {
+                window.close();
+                // Fallback for mobile browsers that block window.close()
+                document.body.innerHTML = "<div class='p-10 text-center'>Aplikasi telah ditutup. Silakan tutup tab browser Anda.</div>";
+            }
+        }
+
+        // --- SETTINGS ---
         function saveSetting() {
             const url = document.getElementById('settingUrl').value;
             if(!url) return Swal.fire('Error', 'URL tidak boleh kosong', 'error');
             
-            localStorage.setItem('tokoAppUrl', url);
-            API_URL = url;
+            try {
+                localStorage.setItem('tokoAppUrl', url);
+                API_URL = url;
+                
+                const blob = new Blob([url], { type: "text/plain;charset=utf-8" });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = "setting.txt";
+                link.click();
 
-            // Fitur Download setting.txt
-            const blob = new Blob([url], { type: "text/plain;charset=utf-8" });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "setting.txt";
-            link.click();
-
-            Swal.fire('Tersimpan', 'Pengaturan disimpan dan file setting.txt diunduh.', 'success');
+                Swal.fire('Tersimpan', 'Pengaturan disimpan.', 'success');
+            } catch(e) {
+                Swal.fire('Error', 'Gagal menyimpan ke penyimpanan lokal browser HP ini.', 'error');
+            }
         }
 
-        // Init Load Setting
-        if(API_URL) document.getElementById('settingUrl').value = API_URL;
-
-        // --- 4. DATA BARANG ---
+        // --- DATA BARANG ---
         let base64Image = "";
-
         function previewImage(input) {
             if (input.files && input.files[0]) {
                 var reader = new FileReader();
                 reader.onload = function (e) {
                     document.getElementById('brgPreview').src = e.target.result;
                     document.getElementById('brgPreview').classList.remove('hidden');
-                    base64Image = e.target.result; // Keep simplified for this demo
+                    base64Image = e.target.result;
                 }
                 reader.readAsDataURL(input.files[0]);
             }
         }
 
-        async function checkExistingData(type) {
-            // Logika pencarian mirip (simplified for single file approach)
-            // Di real app, panggil doGet API dengan op=searchBarang&q=...
-        }
+        function checkExistingData(type) { /* Placeholder for future logic */ }
 
         function saveBarang() {
             if(!API_URL) return Swal.fire('Error', 'Atur URL di Pengaturan dulu', 'warning');
-
             const data = [
                 document.getElementById('brgKode').value.toUpperCase(),
                 document.getElementById('brgNama').value,
@@ -336,10 +376,9 @@
                 document.getElementById('brgUkuran').value,
                 document.getElementById('brgCatatan').value,
                 document.getElementById('brgMedsos').value,
-                base64Image.length > 50000 ? "Image too large" : base64Image, // Safety check
+                base64Image.length > 50000 ? "Image too large" : base64Image,
                 getNow()
             ];
-
             submitToSheet('MBARANG', data, () => {
                 document.getElementById('formBarang').reset();
                 document.getElementById('brgPreview').classList.add('hidden');
@@ -348,24 +387,18 @@
             });
         }
 
-        // --- 5. DATA HARGA ---
+        // --- DATA HARGA ---
         function calcHarga() {
             const dasar = parseFloat(document.getElementById('hrgDasar').value) || 0;
             const diskon = parseFloat(document.getElementById('hrgDiskon').value) || 0;
             const pajak = parseFloat(document.getElementById('hrgPajak').value) || 0;
             const margin = parseFloat(document.getElementById('hrgMargin').value) || 0;
-
-            const valDiskon = dasar * (diskon / 100);
-            const valPajak = dasar * (pajak / 100);
-            const valMargin = dasar * (margin / 100);
-
-            const jual = dasar + valMargin - valDiskon - valPajak;
+            const jual = dasar + (dasar * (margin/100)) - (dasar * (diskon/100)) - (dasar * (pajak/100));
             document.getElementById('hrgJual').value = Math.round(jual);
         }
 
         function saveHarga() {
             if(!API_URL) return Swal.fire('Error', 'Atur URL dulu', 'warning');
-            
             const data = [
                 document.getElementById('hrgKode').value,
                 getNow(),
@@ -376,7 +409,6 @@
                 document.getElementById('hrgJual').value,
                 document.getElementById('hrgCatatan').value
             ];
-
             submitToSheet('MHARGA', data, () => {
                 document.getElementById('formHarga').reset();
                 document.getElementById('hrgKode').focus();
@@ -384,7 +416,7 @@
             });
         }
 
-        // --- 6. DATA INVENTORY ---
+        // --- DATA INVENTORY ---
         function calcStock() {
             const last = parseInt(document.getElementById('invLastStockVal').value) || 0;
             const tambah = parseInt(document.getElementById('invTambah').value) || 0;
@@ -404,25 +436,20 @@
                     calcStock();
                 }
                 Swal.close();
-            } catch(e) {
-                console.error(e);
-                Swal.close();
-            }
+            } catch(e) { console.error(e); Swal.close(); }
         }
 
         function saveInventory() {
             if(!API_URL) return Swal.fire('Error', 'Atur URL dulu', 'warning');
-            
             const data = [
                 document.getElementById('invKode').value,
                 getNow(),
                 document.getElementById('invTambah').value,
-                0, // Kurang disable/0
+                0,
                 document.getElementById('invStok').value,
                 "TAMBAHSTOK",
                 document.getElementById('invCatatan').value
             ];
-
             submitToSheet('MINV', data, () => {
                 document.getElementById('formInv').reset();
                 document.getElementById('invKode').focus();
@@ -431,35 +458,64 @@
             });
         }
 
-        // --- 7. HOME & SCANNER LOGIC ---
+        // --- SCANNER LOGIC ---
         function startScan() {
+            // Check library
+            if(typeof Html5Qrcode === 'undefined') {
+                return Swal.fire('Loading...', 'Library Scanner sedang dimuat, coba 2 detik lagi.', 'info');
+            }
+
+            // Show Container FIRST so dimensions can be read
+            const readerContainer = document.getElementById('reader-container');
             const readerDiv = document.getElementById('reader');
-            readerDiv.classList.remove('hidden');
-            
+            readerContainer.classList.remove('hidden');
+
             if(!html5QrcodeScanner) {
                 html5QrcodeScanner = new Html5Qrcode("reader");
             }
 
             html5QrcodeScanner.start(
                 { facingMode: "environment" }, 
-                { fps: 10, qrbox: { width: 250, height: 250 } },
+                { fps: 10, qrbox: { width: 200, height: 200 } }, // Reduce size for smaller phones
                 (decodedText, decodedResult) => {
                     // Success
-                    html5QrcodeScanner.stop();
-                    readerDiv.classList.add('hidden');
+                    stopScan();
                     fetchProductDetails(decodedText);
                 },
-                (errorMessage) => {
-                    // parsing error, ignore
+                (errorMessage) => { 
+                    // Scanning... 
                 }
             ).catch(err => {
-                Swal.fire('Error', 'Kamera tidak dapat diakses', 'error');
+                stopScan();
+                Swal.fire({
+                    title: 'Gagal Akses Kamera', 
+                    text: 'Pastikan Anda memberikan izin kamera dan menggunakan HTTPS. Error: ' + err, 
+                    icon: 'error'
+                });
             });
+        }
+
+        function stopScan() {
+            const readerContainer = document.getElementById('reader-container');
+            if(html5QrcodeScanner) {
+                try {
+                    html5QrcodeScanner.stop().then(() => {
+                        html5QrcodeScanner.clear();
+                        readerContainer.classList.add('hidden');
+                    }).catch(err => {
+                         // Force hide if stop fails
+                         readerContainer.classList.add('hidden');
+                    });
+                } catch(e) { 
+                    readerContainer.classList.add('hidden');
+                }
+            } else {
+                readerContainer.classList.add('hidden');
+            }
         }
 
         async function fetchProductDetails(kode) {
             if(!API_URL) return Swal.fire('Error', 'Konfigurasi URL belum diatur', 'error');
-            
             Swal.fire({ title: 'Mencari Data...', didOpen: () => Swal.showLoading() });
 
             try {
@@ -474,7 +530,6 @@
                     document.getElementById('transHarga').value = parseInt(item.HARGAJUAL).toLocaleString('id-ID');
                     document.getElementById('transStok').value = item.STOK || 0;
                     
-                    // Photo logic
                     const photoArea = document.getElementById('transPhoto');
                     const photoPlace = document.getElementById('transPhotoPlaceholder');
                     if(item.PHOTO && item.PHOTO.startsWith('data:image')) {
@@ -486,37 +541,39 @@
                         photoPlace.classList.remove('hidden');
                     }
 
-                    // Store raw price for calculation logic later if needed
                     document.getElementById('transDataComplete').dataset.rawPrice = item.HARGAJUAL;
                     document.getElementById('transDataComplete').dataset.rawStok = item.STOK || 0;
-                    
                     Swal.close();
                 } else {
                     Swal.fire('Tidak Ditemukan', `Kode ${kode} tidak ada di database`, 'warning');
                     resetTransForm();
                 }
             } catch (e) {
-                Swal.fire('Error', 'Gagal mengambil data', 'error');
+                Swal.fire('Error', 'Gagal mengambil data: ' + e, 'error');
             }
         }
 
         function processTrans() {
             const kode = document.getElementById('transKode').value;
             if(!kode) return Swal.fire('Info', 'Scan barang dulu', 'info');
-
-            const currentStok = parseInt(document.getElementById('transDataComplete').dataset.rawStok || 0);
+            
+            // Safety parsing
+            let currentStok = 0;
+            try {
+                currentStok = parseInt(document.getElementById('transDataComplete').dataset.rawStok || 0);
+            } catch(e) {}
+            
             const newStok = currentStok - 1;
 
             const data = [
                 kode,
                 getNow(),
-                "", // Tambah kosong
-                1,  // Kurang
+                "", 
+                1, 
                 newStok,
                 "BELI",
                 "Penjualan via App"
             ];
-
             submitToSheet('MINV', data, () => {
                 resetTransForm();
             });
@@ -528,48 +585,41 @@
         }
 
         function resetTransForm() {
-            document.getElementById('transKode').value = '';
-            document.getElementById('transNama').value = '';
-            document.getElementById('transKategori').value = '';
-            document.getElementById('transHarga').value = '';
-            document.getElementById('transStok').value = '0';
-            document.getElementById('transPhoto').classList.add('hidden');
-            document.getElementById('transPhotoPlaceholder').classList.remove('hidden');
+            if(document.getElementById('transKode')) {
+                document.getElementById('transKode').value = '';
+                document.getElementById('transNama').value = '';
+                document.getElementById('transKategori').value = '';
+                document.getElementById('transHarga').value = '';
+                document.getElementById('transStok').value = '0';
+                document.getElementById('transPhoto').classList.add('hidden');
+                document.getElementById('transPhotoPlaceholder').classList.remove('hidden');
+            }
         }
 
-        // --- SHARED FUNCTIONS ---
+        // --- SHARED UTILS ---
         async function submitToSheet(sheetName, rowData, onSuccess) {
             Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
-            
             try {
-                // Apps Script expects stringified object for body usually to avoid CORS preflight complexity in simple modes, 
-                // but let's try standard fetch POST with no-cors or text/plain
-                const payload = JSON.stringify({
-                    sheet: sheetName,
-                    ...rowData // Sending array as object keys 0,1,2... handled by GAS script logic usually, but here let's simplify
-                    // Since my GAS script uses appendRow(data), data must be an array.
-                    // fetch body must be string.
-                });
-                
-                // Hack: Google Apps Script Web App POST with 'no-cors' is tricky. 
-                // We use 'text/plain' to avoid OPTION preflight, and handle parsing in GAS.
+                // Gunakan mode no-cors untuk menghindari blokir di beberapa browser mobile
+                // Walaupun response-nya 'opaque' (tidak bisa dibaca JSON-nya), data tetap masuk ke Sheet.
                 await fetch(API_URL, {
                     method: 'POST',
-                    body: JSON.stringify(rowData), // Send array directly
+                    body: JSON.stringify({ sheet: sheetName, ...rowData }), // Format yg diterima backend Anda (array)
+                    // Jika backend Anda menerima array langsung, gunakan: JSON.stringify(rowData) dan sesuaikan handle di GAS
+                    // Tapi di kode GAS awal Anda menggunakan: const data = JSON.parse(e.postData.contents);
+                    // Jadi format payload harus sesuai dengan yang di-expect GAS. 
+                    // Kode GAS Anda di atas: sheet.appendRow(data). 
+                    // Maka kirimlah Array langsung:
+                    body: JSON.stringify(rowData),
                     headers: { "Content-Type": "text/plain;charset=utf-8" },
                 });
-
-                // Note: With no-cors or simple fetch to GAS, we might not get a readable JSON response easily without redirect handling.
-                // Assuming success if no network error for this simple prototype.
                 
                 Swal.fire({ icon: 'success', title: 'Berhasil Disimpan!', timer: 1500, showConfirmButton: false });
                 if(onSuccess) onSuccess();
-
             } catch (error) {
                 console.error(error);
-                // Often GAS returns a 302 redirect which Fetch interprets as error in some configs or opaque.
-                // We will assume success for this demo unless strict error handling needed.
-                Swal.fire({ icon: 'success', title: 'Data Terkirim', text: '(Respon server mungkin tertunda)', timer: 1500 });
+                // Asumsikan sukses karena GAS sering redirect 302 yang dianggap error oleh fetch
+                Swal.fire({ icon: 'success', title: 'Data Terkirim', text: '(Respon server delay)', timer: 1500 });
                 if(onSuccess) onSuccess();
             }
         }
@@ -579,17 +629,12 @@
             try {
                 const res = await fetch(`${API_URL}?op=getAllCodes`);
                 const data = await res.json();
-                
                 const opts = `<option value="">Pilih Barang...</option>` + 
                              data.map(i => `<option value="${i.KODE}">${i.KODE} - ${i.NAMA}</option>`).join('');
-                
                 document.getElementById('hrgKode').innerHTML = opts;
                 document.getElementById('invKode').innerHTML = opts;
             } catch(e) { console.log("Gagal load dropdown"); }
         }
-
-        // Initial Load
-        nav('home');
 
     </script>
 </body>

@@ -31,7 +31,14 @@ function saveSettings(url) {
 // Event Listeners
 function initializeEventListeners() {
     // Menu Toggle
-    document.getElementById('menuToggle').addEventListener('click', toggleMenu);
+    const menuToggle = document.getElementById('menuToggle');
+    if (menuToggle) {
+        menuToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleMenu();
+        });
+    }
     
     // Navigation
     document.querySelectorAll('.side-menu nav a[data-page]').forEach(link => {
@@ -43,21 +50,43 @@ function initializeEventListeners() {
     });
 
     // Keluar Button
-    document.getElementById('keluarBtn').addEventListener('click', function(e) {
-        e.preventDefault();
-        if (confirm('Apakah Anda yakin ingin keluar?')) {
-            window.close();
-        }
-    });
+    const keluarBtn = document.getElementById('keluarBtn');
+    if (keluarBtn) {
+        keluarBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (confirm('Apakah Anda yakin ingin keluar?')) {
+                window.close();
+            }
+        });
+    }
 
     // Scan Button
-    document.getElementById('btnScan').addEventListener('click', startScan);
+    const btnScan = document.getElementById('btnScan');
+    if (btnScan) {
+        btnScan.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            startScan();
+        });
+    }
     
     // Cancel Button
-    document.getElementById('btnCancel').addEventListener('click', cancelScan);
+    const btnCancel = document.getElementById('btnCancel');
+    if (btnCancel) {
+        btnCancel.addEventListener('click', function(e) {
+            e.preventDefault();
+            cancelScan();
+        });
+    }
     
     // Transaksi Button
-    document.getElementById('btnTransaksi').addEventListener('click', processTransaction);
+    const btnTransaksi = document.getElementById('btnTransaksi');
+    if (btnTransaksi) {
+        btnTransaksi.addEventListener('click', function(e) {
+            e.preventDefault();
+            processTransaction();
+        });
+    }
 
     // Form Submissions
     document.getElementById('formBarang').addEventListener('submit', submitBarang);
@@ -94,6 +123,19 @@ function initializeEventListeners() {
     // Inventory Form - Update stok when tambah changes
     document.getElementById('invTambah').addEventListener('input', updateInventoryStok);
     document.getElementById('invKode').addEventListener('change', loadCurrentStok);
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', function(e) {
+        const sideMenu = document.getElementById('sideMenu');
+        const menuToggle = document.getElementById('menuToggle');
+        
+        if (sideMenu && menuToggle && 
+            !sideMenu.contains(e.target) && 
+            !menuToggle.contains(e.target) &&
+            sideMenu.classList.contains('active')) {
+            closeMenu();
+        }
+    });
 }
 
 // Menu Functions
@@ -126,44 +168,89 @@ function showNotification(message, type = 'success') {
 
 // Barcode Scanner
 function startScan() {
+    console.log('Starting scan...');
     const readerDiv = document.getElementById('reader');
+    const btnScan = document.getElementById('btnScan');
+    
+    if (!readerDiv || !btnScan) {
+        console.error('Reader div or button not found');
+        return;
+    }
+    
     readerDiv.style.display = 'block';
-    document.getElementById('btnScan').style.display = 'none';
+    btnScan.style.display = 'none';
+
+    if (!window.Html5Qrcode) {
+        console.error('Html5Qrcode library not loaded');
+        showNotification('Library QR Code tidak ditemukan', 'error');
+        stopScanner();
+        return;
+    }
 
     html5QrCode = new Html5Qrcode("reader");
     
+    const config = {
+        fps: 10,
+        qrbox: { width: 250, height: 250 },
+        aspectRatio: 1.0
+    };
+    
+    // Try to start with back camera first
     html5QrCode.start(
         { facingMode: "environment" },
-        {
-            fps: 10,
-            qrbox: { width: 250, height: 250 }
-        },
+        config,
         onScanSuccess,
         onScanError
     ).catch(err => {
-        console.error('Error starting scanner:', err);
-        showNotification('Gagal membuka kamera', 'error');
-        stopScanner();
+        console.error('Error starting scanner with back camera:', err);
+        // Try with front camera
+        html5QrCode.start(
+            { facingMode: "user" },
+            config,
+            onScanSuccess,
+            onScanError
+        ).catch(err2 => {
+            console.error('Error starting scanner with front camera:', err2);
+            showNotification('Gagal membuka kamera. Pastikan izin kamera sudah diberikan.', 'error');
+            stopScanner();
+        });
     });
 }
 
 function onScanSuccess(decodedText) {
+    console.log('Scan success:', decodedText);
     stopScanner();
     loadBarangByKode(decodedText);
 }
 
 function onScanError(error) {
-    // Silent error handling
+    // Silent error handling - normal behavior during scanning
+    // console.log('Scan error:', error);
 }
 
 function stopScanner() {
+    console.log('Stopping scanner...');
     if (html5QrCode) {
         html5QrCode.stop().then(() => {
-            document.getElementById('reader').style.display = 'none';
-            document.getElementById('btnScan').style.display = 'inline-flex';
+            console.log('Scanner stopped');
+            const readerDiv = document.getElementById('reader');
+            const btnScan = document.getElementById('btnScan');
+            if (readerDiv) readerDiv.style.display = 'none';
+            if (btnScan) btnScan.style.display = 'flex';
+            html5QrCode = null;
         }).catch(err => {
             console.error('Error stopping scanner:', err);
+            const readerDiv = document.getElementById('reader');
+            const btnScan = document.getElementById('btnScan');
+            if (readerDiv) readerDiv.style.display = 'none';
+            if (btnScan) btnScan.style.display = 'flex';
+            html5QrCode = null;
         });
+    } else {
+        const readerDiv = document.getElementById('reader');
+        const btnScan = document.getElementById('btnScan');
+        if (readerDiv) readerDiv.style.display = 'none';
+        if (btnScan) btnScan.style.display = 'flex';
     }
 }
 

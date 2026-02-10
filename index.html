@@ -2,7 +2,10 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Aplikasi Inventory</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -12,7 +15,7 @@
     <header>
         <div class="container">
             <h1>Inventory System</h1>
-            <button class="menu-toggle" id="menuToggle">
+            <button class="menu-toggle" id="menuToggle" onclick="toggleMenu()">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -23,13 +26,13 @@
     <!-- Side Menu -->
     <div class="side-menu" id="sideMenu">
         <nav>
-            <a href="#" data-page="beranda">Beranda</a>
-            <a href="#" data-page="data-barang">Data Barang</a>
-            <a href="#" data-page="data-harga">Data Harga</a>
-            <a href="#" data-page="data-inventory">Data Inventory</a>
-            <a href="#" data-page="pengaturan">Pengaturan</a>
+            <a href="#" data-page="beranda" onclick="showPage('beranda'); closeMenu(); return false;">Beranda</a>
+            <a href="#" data-page="data-barang" onclick="showPage('data-barang'); closeMenu(); return false;">Data Barang</a>
+            <a href="#" data-page="data-harga" onclick="showPage('data-harga'); closeMenu(); return false;">Data Harga</a>
+            <a href="#" data-page="data-inventory" onclick="showPage('data-inventory'); closeMenu(); return false;">Data Inventory</a>
+            <a href="#" data-page="pengaturan" onclick="showPage('pengaturan'); closeMenu(); return false;">Pengaturan</a>
             <hr>
-            <a href="#" id="keluarBtn">Keluar</a>
+            <a href="#" id="keluarBtn" onclick="if(confirm('Apakah Anda yakin ingin keluar?')) window.close(); return false;">Keluar</a>
         </nav>
     </div>
 
@@ -40,7 +43,7 @@
             <h2>Scan Barcode</h2>
             
             <div class="scan-section">
-                <button class="btn-scan" id="btnScan" type="button">
+                <button class="btn-scan" id="btnScan" type="button" onclick="startScan()">
                     <svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <!-- QR Code Icon -->
                         <rect x="15" y="15" width="30" height="30" rx="3" fill="currentColor"/>
@@ -104,8 +107,8 @@
                 </div>
 
                 <div class="button-group">
-                    <button class="btn btn-danger" id="btnCancel">CANCEL</button>
-                    <button class="btn btn-success" id="btnTransaksi">TRANSAKSI</button>
+                    <button class="btn btn-danger" id="btnCancel" onclick="cancelScan()">CANCEL</button>
+                    <button class="btn btn-success" id="btnTransaksi" onclick="processTransaction()">TRANSAKSI</button>
                 </div>
             </div>
         </div>

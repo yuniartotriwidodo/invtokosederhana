@@ -6,10 +6,18 @@ let currentStok = 0;
 
 // Initialize App
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('App initialized');
+    console.log('User agent:', navigator.userAgent);
     loadSettings();
     initializeEventListeners();
     initializeHargaForm();
     initializeInventoryForm();
+    
+    // Test button elements
+    const btnScan = document.getElementById('btnScan');
+    const menuToggle = document.getElementById('menuToggle');
+    console.log('Scan button found:', !!btnScan);
+    console.log('Menu toggle found:', !!menuToggle);
 });
 
 // Load Settings from LocalStorage
@@ -30,9 +38,16 @@ function saveSettings(url) {
 
 // Event Listeners
 function initializeEventListeners() {
-    // Menu Toggle
+    // Menu Toggle - tambahkan touch event untuk mobile
     const menuToggle = document.getElementById('menuToggle');
     if (menuToggle) {
+        //Gunakan touchstart untuk mobile, click untuk desktop
+        menuToggle.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleMenu();
+        }, { passive: false });
+        
         menuToggle.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
@@ -42,6 +57,12 @@ function initializeEventListeners() {
     
     // Navigation
     document.querySelectorAll('.side-menu nav a[data-page]').forEach(link => {
+        link.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            showPage(this.dataset.page);
+            closeMenu();
+        }, { passive: false });
+        
         link.addEventListener('click', function(e) {
             e.preventDefault();
             showPage(this.dataset.page);
@@ -52,6 +73,13 @@ function initializeEventListeners() {
     // Keluar Button
     const keluarBtn = document.getElementById('keluarBtn');
     if (keluarBtn) {
+        keluarBtn.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            if (confirm('Apakah Anda yakin ingin keluar?')) {
+                window.close();
+            }
+        }, { passive: false });
+        
         keluarBtn.addEventListener('click', function(e) {
             e.preventDefault();
             if (confirm('Apakah Anda yakin ingin keluar?')) {
@@ -60,12 +88,20 @@ function initializeEventListeners() {
         });
     }
 
-    // Scan Button
+    // Scan Button - tambahkan touch event untuk mobile
     const btnScan = document.getElementById('btnScan');
     if (btnScan) {
+        btnScan.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Touch event on scan button');
+            startScan();
+        }, { passive: false });
+        
         btnScan.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
+            console.log('Click event on scan button');
             startScan();
         });
     }
@@ -73,6 +109,11 @@ function initializeEventListeners() {
     // Cancel Button
     const btnCancel = document.getElementById('btnCancel');
     if (btnCancel) {
+        btnCancel.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            cancelScan();
+        }, { passive: false });
+        
         btnCancel.addEventListener('click', function(e) {
             e.preventDefault();
             cancelScan();
@@ -82,6 +123,11 @@ function initializeEventListeners() {
     // Transaksi Button
     const btnTransaksi = document.getElementById('btnTransaksi');
     if (btnTransaksi) {
+        btnTransaksi.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            processTransaction();
+        }, { passive: false });
+        
         btnTransaksi.addEventListener('click', function(e) {
             e.preventDefault();
             processTransaction();
@@ -109,7 +155,15 @@ function initializeEventListeners() {
     document.getElementById('barangNama').addEventListener('blur', checkExistingBarang);
 
     // Camera Button
-    document.getElementById('btnCamera').addEventListener('click', openCamera);
+    const btnCamera = document.getElementById('btnCamera');
+    if (btnCamera) {
+        btnCamera.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            openCamera();
+        }, { passive: false });
+        
+        btnCamera.addEventListener('click', openCamera);
+    }
 
     // Photo Input
     document.getElementById('barangPhoto').addEventListener('change', previewPhoto);
@@ -124,7 +178,19 @@ function initializeEventListeners() {
     document.getElementById('invTambah').addEventListener('input', updateInventoryStok);
     document.getElementById('invKode').addEventListener('change', loadCurrentStok);
     
-    // Close menu when clicking outside
+    // Close menu when clicking/touching outside
+    document.addEventListener('touchstart', function(e) {
+        const sideMenu = document.getElementById('sideMenu');
+        const menuToggle = document.getElementById('menuToggle');
+        
+        if (sideMenu && menuToggle && 
+            !sideMenu.contains(e.target) && 
+            !menuToggle.contains(e.target) &&
+            sideMenu.classList.contains('active')) {
+            closeMenu();
+        }
+    });
+    
     document.addEventListener('click', function(e) {
         const sideMenu = document.getElementById('sideMenu');
         const menuToggle = document.getElementById('menuToggle');
@@ -140,11 +206,20 @@ function initializeEventListeners() {
 
 // Menu Functions
 function toggleMenu() {
-    document.getElementById('sideMenu').classList.toggle('active');
+    console.log('Toggle menu called');
+    const sideMenu = document.getElementById('sideMenu');
+    if (sideMenu) {
+        sideMenu.classList.toggle('active');
+        console.log('Menu active:', sideMenu.classList.contains('active'));
+    }
 }
 
 function closeMenu() {
-    document.getElementById('sideMenu').classList.remove('active');
+    console.log('Close menu called');
+    const sideMenu = document.getElementById('sideMenu');
+    if (sideMenu) {
+        sideMenu.classList.remove('active');
+    }
 }
 
 // Page Navigation

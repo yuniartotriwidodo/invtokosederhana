@@ -2,6 +2,8 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
 }
 
 :root {
@@ -26,6 +28,18 @@ body {
     background: linear-gradient(135deg, var(--lighter-blue) 0%, var(--white) 100%);
     min-height: 100vh;
     color: var(--dark-gray);
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Allow selection for input fields */
+input, textarea {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
 }
 
 /* Header */
@@ -61,6 +75,9 @@ header h1 {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 .menu-toggle span {
@@ -69,6 +86,7 @@ header h1 {
     background: var(--white);
     border-radius: 2px;
     transition: all 0.3s;
+    pointer-events: none;
 }
 
 /* Side Menu */
@@ -183,6 +201,13 @@ header h1 {
     box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
     position: relative;
     overflow: hidden;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.btn-scan * {
+    pointer-events: none;
 }
 
 .btn-scan::before {
@@ -208,6 +233,7 @@ header h1 {
 
 .btn-scan:active {
     transform: scale(0.95);
+    box-shadow: 0 5px 20px rgba(59, 130, 246, 0.3);
 }
 
 .btn-scan svg {
@@ -218,6 +244,22 @@ header h1 {
     letter-spacing: 2px;
     font-weight: 700;
     text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Touch feedback untuk mobile */
+@media (hover: none) and (pointer: coarse) {
+    .btn-scan:active {
+        transform: scale(0.90);
+        transition: transform 0.1s;
+    }
+    
+    .menu-toggle:active {
+        opacity: 0.7;
+    }
+    
+    .btn:active {
+        transform: scale(0.95);
+    }
 }
 
 #reader {
@@ -341,6 +383,9 @@ header h1 {
     cursor: pointer;
     transition: all 0.3s;
     box-shadow: var(--shadow);
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 .btn:hover {

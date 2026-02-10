@@ -1,263 +1,123 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aplikasi Inventory</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <link rel="manifest" href="manifest.json">
 </head>
-<body>
-    <!-- Header -->
-    <header>
-        <div class="container">
-            <h1>Inventory System</h1>
-            <button class="menu-toggle" id="menuToggle" onclick="toggleMenu()">
-                <span></span>
-                <span></span>
-                <span></span>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Inventory App</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
             </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="showScreen('home')">Beranda</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="showScreen('barang')">Data Barang</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="showScreen('harga')">Data Harga</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="showScreen('inventory')">Data Inventory</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="showScreen('settings')">Pengaturan</a></li>
+                    <li class="nav-item"><hr class="dropdown-divider"></li>
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="logout()">Keluar</a></li>
+                </ul>
+            </div>
         </div>
-    </header>
+    </nav>
 
-    <!-- Side Menu -->
-    <div class="side-menu" id="sideMenu">
-        <nav>
-            <a href="#" data-page="beranda" onclick="showPage('beranda'); closeMenu(); return false;">Beranda</a>
-            <a href="#" data-page="data-barang" onclick="showPage('data-barang'); closeMenu(); return false;">Data Barang</a>
-            <a href="#" data-page="data-harga" onclick="showPage('data-harga'); closeMenu(); return false;">Data Harga</a>
-            <a href="#" data-page="data-inventory" onclick="showPage('data-inventory'); closeMenu(); return false;">Data Inventory</a>
-            <a href="#" data-page="pengaturan" onclick="showPage('pengaturan'); closeMenu(); return false;">Pengaturan</a>
-            <hr>
-            <a href="#" id="keluarBtn" onclick="if(confirm('Apakah Anda yakin ingin keluar?')) window.close(); return false;">Keluar</a>
-        </nav>
+    <div class="container mt-4" id="content">
+        <!-- Home Screen -->
+        <div id="home" class="screen">
+            <h2>Beranda</h2>
+            <button class="btn btn-primary btn-lg mb-3" onclick="startScan()">Scan Barcode</button>
+            <form id="transactionForm">
+                <div class="row">
+                    <div class="col-md-6 mb-3"><input type="text" class="form-control" id="kode" placeholder="KODE" readonly></div>
+                    <div class="col-md-6 mb-3"><input type="text" class="form-control" id="nama" placeholder="NAMA" readonly></div>
+                    <div class="col-md-6 mb-3"><input type="text" class="form-control" id="kelompok" placeholder="KELOMPOK" readonly></div>
+                    <div class="col-md-6 mb-3"><input type="text" class="form-control" id="jenis" placeholder="JENIS" readonly></div>
+                    <div class="col-md-6 mb-3"><input type="text" class="form-control" id="warna" placeholder="WARNA" readonly></div>
+                    <div class="col-md-6 mb-3"><input type="text" class="form-control" id="ukuran" placeholder="UKURAN" readonly></div>
+                    <div class="col-md-12 mb-3"><textarea class="form-control" id="catatan" placeholder="CATATAN" readonly></textarea></div>
+                    <div class="col-md-6 mb-3"><input type="text" class="form-control" id="medsos" placeholder="MEDSOS" readonly></div>
+                    <div class="col-md-6 mb-3"><img id="photo" class="img-fluid" style="max-width: 100px;"></div>
+                    <div class="col-md-6 mb-3"><input type="text" class="form-control" id="hargajual" placeholder="HARGAJUAL" readonly></div>
+                </div>
+                <button type="button" class="btn btn-danger me-2" onclick="cancelTransaction()">CANCEL</button>
+                <button type="button" class="btn btn-success" onclick="processTransaction()">TRANSAKSI</button>
+            </form>
+        </div>
+
+        <!-- Data Barang Screen -->
+        <div id="barang" class="screen d-none">
+            <h2>Data Barang</h2>
+            <form id="barangForm">
+                <div class="row">
+                    <div class="col-md-6 mb-3"><input type="text" class="form-control" id="bKode" placeholder="KODE" required></div>
+                    <div class="col-md-6 mb-3"><input type="text" class="form-control" id="bNama" placeholder="NAMA" required></div>
+                    <div class="col-md-6 mb-3"><input type="text" class="form-control" id="bKelompok" placeholder="KELOMPOK"></div>
+                    <div class="col-md-6 mb-3"><input type="text" class="form-control" id="bJenis" placeholder="JENIS"></div>
+                    <div class="col-md-6 mb-3"><input type="text" class="form-control" id="bWarna" placeholder="WARNA"></div>
+                    <div class="col-md-6 mb-3"><input type="text" class="form-control" id="bUkuran" placeholder="UKURAN"></div>
+                    <div class="col-md-12 mb-3"><textarea class="form-control" id="bCatatan" placeholder="CATATAN"></textarea></div>
+                    <div class="col-md-6 mb-3"><input type="text" class="form-control" id="bMedsos" placeholder="MEDSOS"></div>
+                    <div class="col-md-6 mb-3"><input type="file" class="form-control" id="bPhoto" accept="image/*"></div>
+                </div>
+                <button type="submit" class="btn btn-primary">Simpan</button>
+            </form>
+        </div>
+
+        <!-- Data Harga Screen -->
+        <div id="harga" class="screen d-none">
+            <h2>Data Harga</h2>
+            <form id="hargaForm">
+                <div class="row">
+                    <div class="col-md-6 mb-3"><select class="form-select" id="hKode" required><option>Pilih KODE</option></select></div>
+                    <div class="col-md-6 mb-3"><input type="text" class="form-control" id="hTanggal" disabled></div>
+                    <div class="col-md-6 mb-3"><input type="number" class="form-control" id="hHargaDasar" placeholder="HARGADASAR"></div>
+                    <div class="col-md-6 mb-3"><input type="number" class="form-control" id="hDiskon" placeholder="DISKON (%)"></div>
+                    <div class="col-md-6 mb-3"><input type="number" class="form-control" id="hPajak" placeholder="PAJAK (%)"></div>
+                    <div class="col-md-6 mb-3"><input type="number" class="form-control" id="hMargin" placeholder="MARGIN (%)"></div>
+                    <div class="col-md-6 mb-3"><input type="number" class="form-control" id="hHargaJual" disabled></div>
+                    <div class="col-md-12 mb-3"><textarea class="form-control" id="hCatatan" placeholder="CATATAN"></textarea></div>
+                </div>
+                <button type="submit" class="btn btn-primary">Simpan</button>
+            </form>
+        </div>
+
+        <!-- Data Inventory Screen -->
+        <div id="inventory" class="screen d-none">
+            <h2>Data Inventory</h2>
+            <form id="inventoryForm">
+                <div class="row">
+                    <div class="col-md-6 mb-3"><select class="form-select" id="iKode" required><option>Pilih KODE</option></select></div>
+                    <div class="col-md-6 mb-3"><input type="text" class="form-control" id="iTanggal" disabled></div>
+                    <div class="col-md-6 mb-3"><input type="number" class="form-control" id="iTambah" placeholder="TAMBAH"></div>
+                    <div class="col-md-6 mb-3"><input type="number" class="form-control" id="iKurang" disabled></div>
+                    <div class="col-md-6 mb-3"><input type="number" class="form-control" id="iStok" disabled></div>
+                    <div class="col-md-6 mb-3"><input type="text" class="form-control" id="iNamaTransaksi" value="TAMBAHSTOK" readonly></div>
+                    <div class="col-md-12 mb-3"><textarea class="form-control" id="iCatatan" placeholder="CATATAN"></textarea></div>
+                </div>
+                <button type="submit" class="btn btn-primary">Simpan</button>
+            </form>
+        </div>
+
+        <!-- Pengaturan Screen -->
+        <div id="settings" class="screen d-none">
+            <h2>Pengaturan</h2>
+            <form id="settingsForm">
+                <div class="mb-3"><input type="url" class="form-control" id="sheetLink" placeholder="Link Google Sheets API" required></div>
+                <button type="submit" class="btn btn-primary">Simpan</button>
+            </form>
+        </div>
     </div>
 
-    <!-- Main Content -->
-    <main class="container">
-        <!-- Layar Beranda -->
-        <div id="beranda" class="page active">
-            <h2>Scan Barcode</h2>
-            
-            <div class="scan-section">
-                <button class="btn-scan" id="btnScan" type="button" onclick="startScan()">
-                    <svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <!-- QR Code Icon -->
-                        <rect x="15" y="15" width="30" height="30" rx="3" fill="currentColor"/>
-                        <rect x="20" y="20" width="20" height="20" rx="2" fill="white"/>
-                        <rect x="25" y="25" width="10" height="10" fill="currentColor"/>
-                        
-                        <rect x="55" y="15" width="30" height="30" rx="3" fill="currentColor"/>
-                        <rect x="60" y="20" width="20" height="20" rx="2" fill="white"/>
-                        <rect x="65" y="25" width="10" height="10" fill="currentColor"/>
-                        
-                        <rect x="15" y="55" width="30" height="30" rx="3" fill="currentColor"/>
-                        <rect x="20" y="60" width="20" height="20" rx="2" fill="white"/>
-                        <rect x="25" y="65" width="10" height="10" fill="currentColor"/>
-                        
-                        <rect x="55" y="55" width="12" height="12" fill="currentColor"/>
-                        <rect x="70" y="55" width="15" height="12" fill="currentColor"/>
-                        <rect x="55" y="70" width="30" height="15" fill="currentColor"/>
-                    </svg>
-                    <span>SCAN</span>
-                </button>
-                
-                <div id="reader" style="display: none;"></div>
-            </div>
-
-            <div class="result-section" id="resultSection" style="display: none;">
-                <div class="form-group">
-                    <label>Kode</label>
-                    <input type="text" id="scanKode" readonly>
-                </div>
-                <div class="form-group">
-                    <label>Nama</label>
-                    <input type="text" id="scanNama" readonly>
-                </div>
-                <div class="form-group">
-                    <label>Kelompok</label>
-                    <input type="text" id="scanKelompok" readonly>
-                </div>
-                <div class="form-group">
-                    <label>Jenis</label>
-                    <input type="text" id="scanJenis" readonly>
-                </div>
-                <div class="form-group">
-                    <label>Warna</label>
-                    <input type="text" id="scanWarna" readonly>
-                </div>
-                <div class="form-group">
-                    <label>Ukuran</label>
-                    <input type="text" id="scanUkuran" readonly>
-                </div>
-                <div class="form-group">
-                    <label>Catatan</label>
-                    <input type="text" id="scanCatatan" readonly>
-                </div>
-                <div class="form-group">
-                    <label>Photo</label>
-                    <img id="scanPhoto" style="max-width: 200px; display: none;">
-                </div>
-                <div class="form-group">
-                    <label>Harga Jual</label>
-                    <input type="text" id="scanHargaJual" readonly>
-                </div>
-
-                <div class="button-group">
-                    <button class="btn btn-danger" id="btnCancel" onclick="cancelScan()">CANCEL</button>
-                    <button class="btn btn-success" id="btnTransaksi" onclick="processTransaction()">TRANSAKSI</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Layar Data Barang -->
-        <div id="data-barang" class="page">
-            <h2>Data Barang</h2>
-            <form id="formBarang">
-                <div class="form-group">
-                    <label>Kode <span class="required">*</span></label>
-                    <input type="text" id="barangKode" required>
-                    <div class="suggestions" id="kodeSuggestions"></div>
-                </div>
-                <div class="form-group">
-                    <label>Nama <span class="required">*</span></label>
-                    <input type="text" id="barangNama" required>
-                    <div class="suggestions" id="namaSuggestions"></div>
-                </div>
-                <div class="form-group">
-                    <label>Kelompok</label>
-                    <input type="text" id="barangKelompok">
-                </div>
-                <div class="form-group">
-                    <label>Jenis</label>
-                    <input type="text" id="barangJenis">
-                </div>
-                <div class="form-group">
-                    <label>Warna</label>
-                    <input type="text" id="barangWarna">
-                </div>
-                <div class="form-group">
-                    <label>Ukuran</label>
-                    <input type="text" id="barangUkuran">
-                </div>
-                <div class="form-group">
-                    <label>Catatan</label>
-                    <textarea id="barangCatatan" rows="3"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Medsos</label>
-                    <input type="text" id="barangMedsos">
-                </div>
-                <div class="form-group">
-                    <label>Photo</label>
-                    <input type="file" id="barangPhoto" accept="image/*">
-                    <button type="button" class="btn-secondary" id="btnCamera">Ambil dari Kamera</button>
-                    <img id="previewBarangPhoto" style="max-width: 200px; margin-top: 10px; display: none;">
-                </div>
-                <button type="submit" class="btn btn-primary">Simpan</button>
-            </form>
-        </div>
-
-        <!-- Layar Data Harga -->
-        <div id="data-harga" class="page">
-            <h2>Data Harga</h2>
-            <form id="formHarga">
-                <div class="form-group">
-                    <label>Kode <span class="required">*</span></label>
-                    <select id="hargaKode" required>
-                        <option value="">-- Pilih Kode --</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Tanggal</label>
-                    <input type="text" id="hargaTanggal" disabled>
-                </div>
-                <div class="form-group">
-                    <label>Harga Dasar <span class="required">*</span></label>
-                    <input type="number" id="hargaDasar" required min="0" step="0.01">
-                </div>
-                <div class="form-group">
-                    <label>Diskon (%)</label>
-                    <input type="number" id="hargaDiskon" min="0" max="100" step="0.01" value="0">
-                </div>
-                <div class="form-group">
-                    <label>Pajak (%)</label>
-                    <input type="number" id="hargaPajak" min="0" max="100" step="0.01" value="0">
-                </div>
-                <div class="form-group">
-                    <label>Margin (%)</label>
-                    <input type="number" id="hargaMargin" min="0" max="100" step="0.01" value="0">
-                </div>
-                <div class="form-group">
-                    <label>Harga Jual</label>
-                    <input type="number" id="hargaJual" disabled>
-                </div>
-                <div class="form-group">
-                    <label>Catatan</label>
-                    <textarea id="hargaCatatan" rows="3"></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary">Simpan</button>
-            </form>
-        </div>
-
-        <!-- Layar Data Inventory -->
-        <div id="data-inventory" class="page">
-            <h2>Data Inventory</h2>
-            <form id="formInventory">
-                <div class="form-group">
-                    <label>Kode <span class="required">*</span></label>
-                    <select id="invKode" required>
-                        <option value="">-- Pilih Kode --</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Tanggal</label>
-                    <input type="text" id="invTanggal" disabled>
-                </div>
-                <div class="form-group">
-                    <label>Tambah <span class="required">*</span></label>
-                    <input type="number" id="invTambah" required min="0" step="1">
-                </div>
-                <div class="form-group">
-                    <label>Kurang</label>
-                    <input type="number" id="invKurang" disabled value="0">
-                </div>
-                <div class="form-group">
-                    <label>Stok</label>
-                    <input type="number" id="invStok" disabled>
-                </div>
-                <div class="form-group">
-                    <label>Nama Transaksi</label>
-                    <input type="text" id="invNamaTransaksi" value="TAMBAHSTOK" disabled>
-                </div>
-                <div class="form-group">
-                    <label>Catatan</label>
-                    <textarea id="invCatatan" rows="3"></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary">Simpan</button>
-            </form>
-        </div>
-
-        <!-- Layar Pengaturan -->
-        <div id="pengaturan" class="page">
-            <h2>Pengaturan</h2>
-            <form id="formPengaturan">
-                <div class="form-group">
-                    <label>Link Google Sheet <span class="required">*</span></label>
-                    <input type="url" id="settingLink" required placeholder="https://docs.google.com/spreadsheets/d/...">
-                    <small>Masukkan link Google Sheet yang sudah dipublish sebagai web app</small>
-                </div>
-                <button type="submit" class="btn btn-primary">Simpan</button>
-            </form>
-        </div>
-    </main>
-
-    <!-- Notification -->
-    <div class="notification" id="notification"></div>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

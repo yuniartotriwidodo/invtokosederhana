@@ -3,427 +3,245 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Toko Blue Pro</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-
-    <style>
-        body { font-family: 'Inter', system-ui, sans-serif; background-color: #f8fafc; overflow-x: hidden; }
-        .glass-panel { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); }
-        .screen { transition: all 0.3s ease-in-out; }
-        .hidden-screen { display: none; transform: translateX(20px); opacity: 0; }
-        .active-screen { display: block; transform: translateX(0); opacity: 1; }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
-
-        /* Floating Animation */
-        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
-        .float-icon { animation: float 3s ease-in-out infinite; }
-    </style>
+    <title>Aplikasi Inventory</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
-<body class="text-slate-900">
-
-    <!-- Header & Navigation -->
-    <nav class="bg-blue-600 text-white shadow-md fixed w-full top-0 z-50">
-        <div class="max-w-md mx-auto px-5 py-4 flex justify-between items-center">
-            <div class="font-bold text-xl tracking-tight flex items-center">
-                <div class="bg-white text-blue-600 p-1.5 rounded-lg mr-2 shadow-sm">
-                    <i class="fas fa-store"></i>
-                </div>
-                Toko<span class="font-light text-blue-100">Blue</span>
-            </div>
-            <button id="menuBtn" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-blue-500 transition">
-                <i class="fas fa-bars text-xl"></i>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <h1>Inventory System</h1>
+            <button class="menu-toggle" id="menuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
             </button>
         </div>
-        <!-- Dropdown Menu -->
-        <div id="mobileMenu" class="hidden bg-blue-700 absolute w-full shadow-2xl border-t border-blue-500">
-            <a href="#" onclick="nav('home')" class="flex items-center px-6 py-4 hover:bg-blue-600 border-b border-blue-600/50"><i class="fas fa-home w-8 opacity-70"></i> Beranda</a>
-            <a href="#" onclick="nav('barang')" class="flex items-center px-6 py-4 hover:bg-blue-600 border-b border-blue-600/50"><i class="fas fa-box w-8 opacity-70"></i> Data Barang</a>
-            <a href="#" onclick="nav('harga')" class="flex items-center px-6 py-4 hover:bg-blue-600 border-b border-blue-600/50"><i class="fas fa-tag w-8 opacity-70"></i> Atur Harga</a>
-            <a href="#" onclick="nav('inventory')" class="flex items-center px-6 py-4 hover:bg-blue-600 border-b border-blue-600/50"><i class="fas fa-warehouse w-8 opacity-70"></i> Stok Opname</a>
-            <a href="#" onclick="nav('setting')" class="flex items-center px-6 py-4 hover:bg-blue-600"><i class="fas fa-cog w-8 opacity-70"></i> Pengaturan</a>
-        </div>
-    </nav>
+    </header>
 
-    <main class="pt-24 pb-12 px-4 max-w-md mx-auto min-h-screen">
+    <!-- Side Menu -->
+    <div class="side-menu" id="sideMenu">
+        <nav>
+            <a href="#" data-page="beranda">Beranda</a>
+            <a href="#" data-page="data-barang">Data Barang</a>
+            <a href="#" data-page="data-harga">Data Harga</a>
+            <a href="#" data-page="data-inventory">Data Inventory</a>
+            <a href="#" data-page="pengaturan">Pengaturan</a>
+            <hr>
+            <a href="#" id="keluarBtn">Keluar</a>
+        </nav>
+    </div>
 
-        <!-- SCREEN: BERANDA (KASIR) -->
-        <div id="screen-home" class="screen active-screen">
-            <div class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl shadow-xl p-8 text-center text-white mb-6 relative overflow-hidden">
-                <div class="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
-                <h2 class="text-lg font-medium opacity-80 mb-6">Kasir Digital</h2>
-                
-                <div id="reader" class="bg-black rounded-2xl overflow-hidden mx-auto mb-4 hidden border-4 border-white/20" style="width: 100%; min-height: 250px;"></div>
-                
-                <button id="btnScan" onclick="startScan()" class="bg-white text-blue-600 w-24 h-24 rounded-full shadow-2xl flex items-center justify-center mx-auto text-4xl hover:scale-105 active:scale-95 transition-all ring-8 ring-white/10 group">
-                    <i class="fas fa-qrcode group-hover:rotate-12 transition-transform"></i>
-                </button>
-                <p class="mt-4 text-sm font-medium tracking-wide uppercase opacity-70">Tap untuk Scan</p>
-            </div>
-
-            <div class="bg-white rounded-3xl shadow-sm p-6 border border-slate-200">
-                <div class="space-y-4">
-                    <!-- Informasi Barang & Foto -->
-                    <div class="flex items-start space-x-4 mb-4 border-b pb-4 border-slate-50">
-                        <div id="transPhotoPlaceholder" class="h-24 w-24 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 shrink-0 border-2 border-dashed border-slate-200">
-                            <i class="fas fa-image text-3xl"></i>
-                        </div>
-                        <img id="transPhoto" class="h-24 w-24 object-cover rounded-2xl border-2 border-blue-100 hidden shrink-0 shadow-sm">
-                        <div class="flex-1 overflow-hidden">
-                            <input type="text" id="transNama" class="w-full text-lg font-bold text-slate-800 bg-transparent border-none focus:ring-0 p-0 truncate" placeholder="Nama Barang..." readonly>
-                            <div class="flex flex-wrap gap-1 mt-1">
-                                <span id="badgeKategori" class="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-md uppercase hidden"></span>
-                                <span id="badgeJenis" class="px-2 py-0.5 bg-purple-50 text-purple-600 text-[10px] font-bold rounded-md uppercase hidden"></span>
-                            </div>
-                            <p id="transKodeDisplay" class="text-xs text-slate-400 mt-1 font-mono uppercase"></p>
-                        </div>
-                    </div>
-
-                    <!-- Detail Spesifikasi -->
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                            <label class="block text-[9px] font-bold text-slate-400 uppercase">Warna / Ukuran</label>
-                            <p id="transSpec" class="text-xs font-semibold text-slate-700 mt-1">-</p>
-                        </div>
-                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                            <label class="block text-[9px] font-bold text-slate-400 uppercase">Stok Tersedia</label>
-                            <p id="transStok" class="text-sm font-bold text-slate-700 mt-1">0</p>
-                        </div>
-                    </div>
-
-                    <!-- Catatan -->
-                    <div class="bg-amber-50 p-3 rounded-xl border border-amber-100">
-                        <label class="block text-[9px] font-bold text-amber-600 uppercase">Catatan</label>
-                        <p id="transCatatan" class="text-[11px] text-amber-800 mt-1 italic">Tidak ada catatan</p>
-                    </div>
-
-                    <!-- Harga -->
-                    <div class="bg-green-600 p-4 rounded-2xl shadow-lg shadow-green-100">
-                        <label class="block text-[10px] font-bold text-white/70 uppercase mb-1">Harga Satuan</label>
-                        <div class="flex items-center text-white">
-                            <span class="text-lg font-bold mr-1">Rp</span>
-                            <input type="text" id="transHarga" class="w-full bg-transparent text-2xl font-black focus:outline-none" readonly value="0">
-                        </div>
-                    </div>
-
-                    <div class="flex space-x-3 pt-2">
-                        <button onclick="cancelTrans()" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition active:scale-95">BATAL</button>
-                        <button onclick="processTrans()" class="flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition active:scale-95 flex items-center justify-center space-x-2">
-                            <span>PROSES JUAL</span>
-                            <i class="fas fa-check-circle"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Layar Beranda -->
+        <div id="beranda" class="page active">
+            <h2>Scan Barcode</h2>
             
-            <!-- Hidden Fields -->
-            <input type="hidden" id="transKode">
-            <input type="hidden" id="rawPrice">
-            <input type="hidden" id="rawStock">
-        </div>
-
-        <!-- SCREEN: INPUT BARANG -->
-        <div id="screen-barang" class="screen hidden-screen">
-            <div class="bg-white rounded-3xl shadow-sm p-7 border border-slate-200">
-                <h2 class="text-xl font-bold mb-6 text-slate-800 flex items-center">
-                    <span class="w-2 h-8 bg-blue-600 rounded-full mr-3"></span>
-                    Tambah Barang
-                </h2>
-                <form onsubmit="event.preventDefault(); saveBarang();" class="space-y-4">
-                    <div class="space-y-2">
-                        <label class="text-xs font-bold text-slate-500 uppercase ml-1">Informasi Utama</label>
-                        <div class="flex space-x-2">
-                            <input type="text" id="brgKode" placeholder="Kode Barcode" class="flex-1 p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-100 outline-none transition" required>
-                            <button type="button" onclick="scanToField('brgKode')" class="bg-slate-100 p-4 rounded-2xl text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition">
-                                <i class="fas fa-expand"></i>
-                            </button>
-                        </div>
-                        <input type="text" id="brgNama" placeholder="Nama Produk" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-100 outline-none transition" required>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <input type="text" id="brgKelompok" placeholder="Kategori" class="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm">
-                        <input type="text" id="brgJenis" placeholder="Jenis" class="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm">
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <input type="text" id="brgWarna" placeholder="Warna" class="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm">
-                        <input type="text" id="brgUkuran" placeholder="Ukuran" class="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm">
-                    </div>
-
-                    <textarea id="brgCatatan" placeholder="Catatan Tambahan..." class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm h-20 outline-none"></textarea>
-
-                    <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100">
-                        <label class="block text-center cursor-pointer group">
-                            <div id="brgPreviewContainer" class="mb-2 hidden">
-                                <img id="brgPreview" class="w-full h-48 object-cover rounded-xl shadow-inner">
-                            </div>
-                            <div id="brgPhotoPrompt">
-                                <i class="fas fa-camera text-3xl text-blue-500 mb-2 float-icon"></i>
-                                <span class="block text-blue-600 text-sm font-bold uppercase">Foto Produk</span>
-                            </div>
-                            <input type="file" id="brgPhoto" accept="image/*" class="hidden" onchange="processAndPreviewImage(this)">
-                        </label>
-                    </div>
-
-                    <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all mt-6 active:scale-95">
-                        SIMPAN DATA
-                    </button>
-                </form>
+            <div class="scan-section">
+                <button class="btn-scan" id="btnScan">
+                    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="9" y1="3" x2="9" y2="21"></line>
+                        <line x1="15" y1="3" x2="15" y2="21"></line>
+                    </svg>
+                    <span>Scan Barcode</span>
+                </button>
+                
+                <div id="reader" style="display: none;"></div>
             </div>
-        </div>
 
-        <!-- SCREEN: SETTING -->
-        <div id="screen-setting" class="screen hidden-screen">
-            <div class="bg-white rounded-3xl shadow-sm p-7 border border-slate-200">
-                <h2 class="text-xl font-bold mb-4 text-slate-800 flex items-center">
-                    <span class="w-2 h-8 bg-slate-800 rounded-full mr-3"></span>
-                    Konfigurasi
-                </h2>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-2 uppercase">Google Web App URL</label>
-                        <textarea id="settingUrl" rows="5" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-mono text-xs focus:ring-4 focus:ring-blue-100 outline-none transition" placeholder="https://script.google.com/macros/s/.../exec"></textarea>
-                    </div>
-                    <button onclick="saveSetting()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold hover:bg-slate-800 transition shadow-lg active:scale-95">
-                        <i class="fas fa-check-circle mr-2"></i> Update Konfigurasi
-                    </button>
+            <div class="result-section" id="resultSection" style="display: none;">
+                <div class="form-group">
+                    <label>Kode</label>
+                    <input type="text" id="scanKode" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Nama</label>
+                    <input type="text" id="scanNama" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Kelompok</label>
+                    <input type="text" id="scanKelompok" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Jenis</label>
+                    <input type="text" id="scanJenis" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Warna</label>
+                    <input type="text" id="scanWarna" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Ukuran</label>
+                    <input type="text" id="scanUkuran" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Catatan</label>
+                    <input type="text" id="scanCatatan" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Photo</label>
+                    <img id="scanPhoto" style="max-width: 200px; display: none;">
+                </div>
+                <div class="form-group">
+                    <label>Harga Jual</label>
+                    <input type="text" id="scanHargaJual" readonly>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-danger" id="btnCancel">CANCEL</button>
+                    <button class="btn btn-success" id="btnTransaksi">TRANSAKSI</button>
                 </div>
             </div>
         </div>
 
+        <!-- Layar Data Barang -->
+        <div id="data-barang" class="page">
+            <h2>Data Barang</h2>
+            <form id="formBarang">
+                <div class="form-group">
+                    <label>Kode <span class="required">*</span></label>
+                    <input type="text" id="barangKode" required>
+                    <div class="suggestions" id="kodeSuggestions"></div>
+                </div>
+                <div class="form-group">
+                    <label>Nama <span class="required">*</span></label>
+                    <input type="text" id="barangNama" required>
+                    <div class="suggestions" id="namaSuggestions"></div>
+                </div>
+                <div class="form-group">
+                    <label>Kelompok</label>
+                    <input type="text" id="barangKelompok">
+                </div>
+                <div class="form-group">
+                    <label>Jenis</label>
+                    <input type="text" id="barangJenis">
+                </div>
+                <div class="form-group">
+                    <label>Warna</label>
+                    <input type="text" id="barangWarna">
+                </div>
+                <div class="form-group">
+                    <label>Ukuran</label>
+                    <input type="text" id="barangUkuran">
+                </div>
+                <div class="form-group">
+                    <label>Catatan</label>
+                    <textarea id="barangCatatan" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Medsos</label>
+                    <input type="text" id="barangMedsos">
+                </div>
+                <div class="form-group">
+                    <label>Photo</label>
+                    <input type="file" id="barangPhoto" accept="image/*">
+                    <button type="button" class="btn-secondary" id="btnCamera">Ambil dari Kamera</button>
+                    <img id="previewBarangPhoto" style="max-width: 200px; margin-top: 10px; display: none;">
+                </div>
+                <button type="submit" class="btn btn-primary">Simpan</button>
+            </form>
+        </div>
+
+        <!-- Layar Data Harga -->
+        <div id="data-harga" class="page">
+            <h2>Data Harga</h2>
+            <form id="formHarga">
+                <div class="form-group">
+                    <label>Kode <span class="required">*</span></label>
+                    <select id="hargaKode" required>
+                        <option value="">-- Pilih Kode --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tanggal</label>
+                    <input type="text" id="hargaTanggal" disabled>
+                </div>
+                <div class="form-group">
+                    <label>Harga Dasar <span class="required">*</span></label>
+                    <input type="number" id="hargaDasar" required min="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Diskon (%)</label>
+                    <input type="number" id="hargaDiskon" min="0" max="100" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Pajak (%)</label>
+                    <input type="number" id="hargaPajak" min="0" max="100" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Margin (%)</label>
+                    <input type="number" id="hargaMargin" min="0" max="100" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Harga Jual</label>
+                    <input type="number" id="hargaJual" disabled>
+                </div>
+                <div class="form-group">
+                    <label>Catatan</label>
+                    <textarea id="hargaCatatan" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Simpan</button>
+            </form>
+        </div>
+
+        <!-- Layar Data Inventory -->
+        <div id="data-inventory" class="page">
+            <h2>Data Inventory</h2>
+            <form id="formInventory">
+                <div class="form-group">
+                    <label>Kode <span class="required">*</span></label>
+                    <select id="invKode" required>
+                        <option value="">-- Pilih Kode --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tanggal</label>
+                    <input type="text" id="invTanggal" disabled>
+                </div>
+                <div class="form-group">
+                    <label>Tambah <span class="required">*</span></label>
+                    <input type="number" id="invTambah" required min="0" step="1">
+                </div>
+                <div class="form-group">
+                    <label>Kurang</label>
+                    <input type="number" id="invKurang" disabled value="0">
+                </div>
+                <div class="form-group">
+                    <label>Stok</label>
+                    <input type="number" id="invStok" disabled>
+                </div>
+                <div class="form-group">
+                    <label>Nama Transaksi</label>
+                    <input type="text" id="invNamaTransaksi" value="TAMBAHSTOK" disabled>
+                </div>
+                <div class="form-group">
+                    <label>Catatan</label>
+                    <textarea id="invCatatan" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Simpan</button>
+            </form>
+        </div>
+
+        <!-- Layar Pengaturan -->
+        <div id="pengaturan" class="page">
+            <h2>Pengaturan</h2>
+            <form id="formPengaturan">
+                <div class="form-group">
+                    <label>Link Google Sheet <span class="required">*</span></label>
+                    <input type="url" id="settingLink" required placeholder="https://docs.google.com/spreadsheets/d/...">
+                    <small>Masukkan link Google Sheet yang sudah dipublish sebagai web app</small>
+                </div>
+                <button type="submit" class="btn btn-primary">Simpan</button>
+            </form>
+        </div>
     </main>
 
-    <script>
-        // --- CONFIG & GLOBAL STATE ---
-        let API_URL = localStorage.getItem('tokoAppUrl') || '';
-        let html5QrcodeScanner = null;
-        let base64Image = "";
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
 
-        // --- UTILS ---
-        const getNow = () => new Date().toLocaleString('sv-SE').replace('T', ' ');
-        const formatIDR = (val) => new Intl.NumberFormat('id-ID').format(val);
-
-        // --- UI NAVIGATION ---
-        function nav(screenName) {
-            document.getElementById('mobileMenu').classList.add('hidden');
-            const screens = document.querySelectorAll('.screen');
-            screens.forEach(s => {
-                s.classList.add('hidden-screen');
-                s.classList.remove('active-screen');
-            });
-            
-            const target = document.getElementById(`screen-${screenName}`);
-            target.classList.remove('hidden-screen');
-            setTimeout(() => target.classList.add('active-screen'), 50);
-
-            // Cleanup scanner if active
-            if(html5QrcodeScanner) {
-                try { html5QrcodeScanner.stop(); } catch(e){}
-                document.getElementById('reader').classList.add('hidden');
-            }
-
-            if(screenName === 'home') resetTransForm();
-        }
-
-        document.getElementById('menuBtn').addEventListener('click', () => {
-            document.getElementById('mobileMenu').classList.toggle('hidden');
-        });
-
-        // --- IMAGE COMPRESSION LOGIC ---
-        function processAndPreviewImage(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const img = new Image();
-                    img.src = e.target.result;
-                    img.onload = function() {
-                        const maxW = 400;
-                        const scale = maxW / img.width;
-                        const canvas = document.createElement('canvas');
-                        canvas.width = maxW;
-                        canvas.height = img.height * scale;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
-                        base64Image = compressedBase64;
-                        document.getElementById('brgPreview').src = compressedBase64;
-                        document.getElementById('brgPreviewContainer').classList.remove('hidden');
-                        document.getElementById('brgPhotoPrompt').classList.add('hidden');
-                    }
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        // --- API ACTIONS ---
-        async function submitToSheet(sheetName, rowData, onSuccess) {
-            if(!API_URL) return Swal.fire('Error', 'Set URL di Pengaturan', 'warning');
-            Swal.fire({ title: 'Menyimpan...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-            
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors', 
-                    body: JSON.stringify({ sheet: sheetName, data: rowData }),
-                    headers: { "Content-Type": "text/plain" },
-                });
-                Swal.fire({ icon: 'success', title: 'Berhasil', timer: 1000, showConfirmButton: false });
-                if(onSuccess) onSuccess();
-            } catch (error) {
-                Swal.fire('Oops', 'Gagal kirim data', 'error');
-            }
-        }
-
-        function saveBarang() {
-            const data = [
-                document.getElementById('brgKode').value.toUpperCase(),
-                document.getElementById('brgNama').value,
-                document.getElementById('brgKelompok').value,
-                document.getElementById('brgJenis').value,
-                document.getElementById('brgWarna').value,
-                document.getElementById('brgUkuran').value,
-                document.getElementById('brgCatatan').value,
-                base64Image,
-                getNow()
-            ];
-
-            submitToSheet('MBARANG', data, () => {
-                nav('home');
-                Swal.fire('Tersimpan', 'Barang berhasil didaftarkan', 'success');
-            });
-        }
-
-        // --- SCANNER LOGIC FIX ---
-        function startScan() {
-            const readerDiv = document.getElementById('reader');
-            readerDiv.classList.toggle('hidden');
-            
-            if(readerDiv.classList.contains('hidden')) {
-                if(html5QrcodeScanner) html5QrcodeScanner.stop();
-                return;
-            }
-
-            if(!html5QrcodeScanner) {
-                html5QrcodeScanner = new Html5Qrcode("reader");
-            }
-
-            html5QrcodeScanner.start(
-                { facingMode: "environment" }, 
-                { fps: 15, qrbox: { width: 220, height: 220 } },
-                (text) => {
-                    html5QrcodeScanner.stop();
-                    readerDiv.classList.add('hidden');
-                    fetchProduct(text);
-                }
-            ).catch(err => {
-                console.error(err);
-                Swal.fire('Error Kamera', 'Pastikan izin kamera diberikan dan menggunakan HTTPS', 'error');
-                readerDiv.classList.add('hidden');
-            });
-        }
-
-        // --- FETCH PRODUCT DATA ---
-        async function fetchProduct(kode) {
-            if(!API_URL) return Swal.fire('Error', 'Set URL di Pengaturan', 'warning');
-            Swal.fire({ title: 'Mencari...', didOpen: () => Swal.showLoading() });
-            
-            try {
-                const res = await fetch(`${API_URL}?op=searchBarang&q=${kode}`);
-                const results = await res.json();
-                
-                if(results.length > 0) {
-                    const item = results[0];
-                    // Mapping Fields
-                    document.getElementById('transKode').value = item.KODE;
-                    document.getElementById('transKodeDisplay').innerText = `Kode: ${item.KODE}`;
-                    document.getElementById('transNama').value = item.NAMA;
-                    
-                    // Badges
-                    if(item.KELOMPOK) {
-                        document.getElementById('badgeKategori').innerText = item.KELOMPOK;
-                        document.getElementById('badgeKategori').classList.remove('hidden');
-                    }
-                    if(item.JENIS) {
-                        document.getElementById('badgeJenis').innerText = item.JENIS;
-                        document.getElementById('badgeJenis').classList.remove('hidden');
-                    }
-
-                    // Spec & Stock
-                    const spec = `${item.WARNA || '-'} / ${item.UKURAN || '-'}`;
-                    document.getElementById('transSpec').innerText = spec;
-                    document.getElementById('transStok').innerText = item.STOK || 0;
-                    document.getElementById('transCatatan').innerText = item.CATATAN || 'Tidak ada catatan';
-                    
-                    // Price
-                    document.getElementById('transHarga').value = formatIDR(item.HARGAJUAL || 0);
-                    document.getElementById('rawPrice').value = item.HARGAJUAL || 0;
-                    document.getElementById('rawStock').value = item.STOK || 0;
-
-                    // Photo
-                    if(item.PHOTO && item.PHOTO.length > 100) {
-                        document.getElementById('transPhoto').src = item.PHOTO;
-                        document.getElementById('transPhoto').classList.remove('hidden');
-                        document.getElementById('transPhotoPlaceholder').classList.add('hidden');
-                    } else {
-                        document.getElementById('transPhoto').classList.add('hidden');
-                        document.getElementById('transPhotoPlaceholder').classList.remove('hidden');
-                    }
-                    Swal.close();
-                } else {
-                    Swal.fire('Tidak Ditemukan', `Kode ${kode} belum terdaftar`, 'info');
-                    resetTransForm();
-                }
-            } catch (e) {
-                Swal.fire('Error Server', 'Pastikan Backend Google Script mendukung operasi searchBarang', 'error');
-            }
-        }
-
-        function processTrans() {
-            const kode = document.getElementById('transKode').value;
-            if(!kode) return;
-
-            const newStok = parseInt(document.getElementById('rawStock').value) - 1;
-            const data = [ kode, getNow(), "", 1, newStok, "JUAL", "Kasir Mobile" ];
-
-            submitToSheet('MINV', data, () => {
-                Swal.fire('Berhasil', 'Transaksi penjualan dicatat', 'success');
-                resetTransForm();
-            });
-        }
-
-        function resetTransForm() {
-            ['transNama', 'transKode', 'transHarga', 'rawPrice', 'rawStock'].forEach(id => {
-                document.getElementById(id).value = '';
-            });
-            document.getElementById('transKodeDisplay').innerText = '';
-            document.getElementById('transSpec').innerText = '-';
-            document.getElementById('transStok').innerText = '0';
-            document.getElementById('transCatatan').innerText = 'Tidak ada catatan';
-            document.getElementById('badgeKategori').classList.add('hidden');
-            document.getElementById('badgeJenis').classList.add('hidden');
-            document.getElementById('transPhoto').classList.add('hidden');
-            document.getElementById('transPhotoPlaceholder').classList.remove('hidden');
-        }
-
-        function saveSetting() {
-            const url = document.getElementById('settingUrl').value;
-            if(!url.includes('google.com')) return Swal.fire('Format Salah', 'Gunakan URL Google Script', 'error');
-            localStorage.setItem('tokoAppUrl', url);
-            API_URL = url;
-            Swal.fire('Berhasil', 'Konfigurasi disimpan', 'success');
-        }
-
-        function cancelTrans() {
-            resetTransForm();
-            Swal.fire({ title: 'Dibatalkan', timer: 800, showConfirmButton: false });
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>

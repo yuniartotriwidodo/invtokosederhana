@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>INV Toko Produk Kulit</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="app">
+  <header class="app-header">
+    <div class="brand">INV Toko Produk Kulit</div>
+    <button id="menuButton" class="icon-button" aria-label="Menu">
+      <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+    </button>
+    <nav id="menuPanel" class="menu-panel">
+      <button class="menu-item" data-view="beranda">Beranda</button>
+      <button class="menu-item" data-view="barang">Data Barang</button>
+      <button class="menu-item" data-view="harga">Data Harga</button>
+      <button class="menu-item" data-view="inventory">Data Inventory</button>
+      <button class="menu-item" data-view="pengaturan">Pengaturan</button>
+      <div class="menu-sep"></div>
+      <button class="menu-item" id="keluarApp">Keluar</button>
+    </nav>
+  </header>
+
+  <main class="app-main">
+    <section id="view-beranda" class="view active">
+      <div class="card">
+        <h2>Beranda</h2>
+        <div class="actions">
+          <button id="scanButton" class="primary-button">Scan</button>
+        </div>
+        <div id="scannerContainer" class="scanner-container hidden">
+          <video id="scannerVideo" playsinline></video>
+          <button id="stopScan" class="secondary-button">Stop</button>
+        </div>
+        <form id="berandaForm" class="form-grid">
+          <div class="field"><label>KODE</label><input id="br-kode" type="text"></div>
+          <div class="field"><label>NAMA</label><input id="br-nama" type="text"></div>
+          <div class="field"><label>KELOMPOK</label><input id="br-kelompok" type="text"></div>
+          <div class="field"><label>JENIS</label><input id="br-jenis" type="text"></div>
+          <div class="field"><label>WARNA</label><input id="br-warna" type="text"></div>
+          <div class="field"><label>UKURAN</label><input id="br-ukuran" type="text"></div>
+          <div class="field"><label>CATATAN</label><input id="br-catatan" type="text"></div>
+          <div class="field full"><label>PHOTO</label><input id="br-photo" type="file" accept="image/*" capture="environment"></div>
+          <div class="field"><label>HARGAJUAL</label><input id="br-hargajual" type="number" disabled></div>
+        </form>
+        <div class="actions">
+          <button id="cancelBeranda" class="danger-button">Cancel</button>
+          <button id="transaksiBeranda" class="success-button">Transaksi</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-barang" class="view">
+      <div class="card">
+        <h2>Data Barang</h2>
+        <form id="barangForm" class="form-grid">
+          <div class="field"><label>KODE</label><input id="bg-kode" type="text" required autocomplete="off"><div id="bg-kode-suggest" class="suggest"></div></div>
+          <div class="field"><label>NAMA</label><input id="bg-nama" type="text" required autocomplete="off"><div id="bg-nama-suggest" class="suggest"></div></div>
+          <div class="field"><label>KELOMPOK</label><input id="bg-kelompok" type="text"></div>
+          <div class="field"><label>JENIS</label><input id="bg-jenis" type="text"></div>
+          <div class="field"><label>WARNA</label><input id="bg-warna" type="text"></div>
+          <div class="field"><label>UKURAN</label><input id="bg-ukuran" type="text"></div>
+          <div class="field"><label>CATATAN</label><input id="bg-catatan" type="text"></div>
+          <div class="field"><label>MEDSOS</label><input id="bg-medsos" type="text"></div>
+          <div class="field full"><label>PHOTO</label><input id="bg-photo" type="file" accept="image/*" capture="environment"></div>
+        </form>
+        <div class="actions">
+          <button id="simpanBarang" class="primary-button">Simpan</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-harga" class="view">
+      <div class="card">
+        <h2>Data Harga</h2>
+        <form id="hargaForm" class="form-grid">
+          <div class="field"><label>KODE</label><select id="hg-kode"></select></div>
+          <div class="field"><label>TANGGAL</label><input id="hg-tanggal" type="text" disabled></div>
+          <div class="field"><label>HARGADASAR</label><input id="hg-hargadasar" type="number" step="0.01"></div>
+          <div class="field"><label>DISKON (%)</label><input id="hg-diskon" type="number" step="0.01"></div>
+          <div class="field"><label>PAJAK (%)</label><input id="hg-pajak" type="number" step="0.01"></div>
+          <div class="field"><label>MARGIN (%)</label><input id="hg-margin" type="number" step="0.01"></div>
+          <div class="field"><label>HARGAJUAL</label><input id="hg-hargajual" type="number" step="0.01" disabled></div>
+          <div class="field full"><label>CATATAN</label><input id="hg-catatan" type="text"></div>
+        </form>
+        <div class="actions">
+          <button id="simpanHarga" class="primary-button">Simpan</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-inventory" class="view">
+      <div class="card">
+        <h2>Data Inventory</h2>
+        <form id="inventoryForm" class="form-grid">
+          <div class="field"><label>KODE</label><select id="iv-kode"></select></div>
+          <div class="field"><label>TANGGAL</label><input id="iv-tanggal" type="text" disabled></div>
+          <div class="field"><label>TAMBAH</label><input id="iv-tambah" type="number" step="1"></div>
+          <div class="field"><label>KURANG</label><input id="iv-kurang" type="number" step="1" disabled></div>
+          <div class="field"><label>STOK</label><input id="iv-stok" type="number" step="1"></div>
+          <div class="field"><label>NAMATRANSAKSI</label><input id="iv-namatrx" type="text" value="TAMBAHSTOK"></div>
+          <div class="field full"><label>CATATAN</label><input id="iv-catatan" type="text"></div>
+        </form>
+        <div class="actions">
+          <button id="simpanInventory" class="primary-button">Simpan</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-pengaturan" class="view">
+      <div class="card">
+        <h2>Pengaturan</h2>
+        <form id="pengaturanForm" class="form-grid">
+          <div class="field full"><label>Link GoogleSheet / Web App</label><input id="set-link" type="url" placeholder="https://script.google.com/..."></div>
+        </form>
+        <div class="actions">
+          <button id="simpanPengaturan" class="primary-button">Simpan</button>
+        </div>
+        <div class="note">Saat disimpan, aplikasi akan memperbarui pengaturan dan membuat file setting.txt untuk diunggah ke hosting.</div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast hidden"></div>
+</div>
+
+<script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

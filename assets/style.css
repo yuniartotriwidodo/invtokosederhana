@@ -1,0 +1,55 @@
+:root {
+  --blue-900: #0b1f3a;
+  --blue-700: #124077;
+  --blue-600: #1662c4;
+  --blue-500: #1e88e5;
+  --blue-100: #e6f0fb;
+  --blue-50: #f3f8fe;
+  --text: #0f172a;
+  --muted: #64748b;
+  --bg: #ffffff;
+  --danger: #dc2626;
+  --success: #16a34a;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--blue-50); color: var(--text); font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+.app { min-height: 100vh; display: flex; flex-direction: column; }
+.app-header { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: linear-gradient(90deg, var(--blue-700), var(--blue-500)); color: #fff; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+.brand { font-weight: 700; letter-spacing: 0.3px; }
+.icon-button { width: 40px; height: 40px; border-radius: 8px; border: none; background: rgba(255,255,255,0.12); display: grid; place-items: center; cursor: pointer; }
+.icon-button .bar { display: block; width: 20px; height: 2px; background: #fff; margin: 2px 0; }
+.menu-panel { position: absolute; right: 12px; top: 64px; background: #fff; border-radius: 12px; box-shadow: 0 10px 24px rgba(0,0,0,0.18); padding: 8px; display: none; min-width: 220px; }
+.menu-panel.open { display: block; }
+.menu-item { width: 100%; text-align: left; padding: 12px; border: none; background: transparent; color: var(--text); border-radius: 8px; cursor: pointer; }
+.menu-item:hover { background: var(--blue-100); color: var(--blue-700); }
+.menu-sep { height: 1px; background: #e5e7eb; margin: 8px 0; }
+.app-main { flex: 1; padding: 16px; }
+.view { display: none; }
+.view.active { display: block; }
+.card { background: var(--bg); border-radius: 16px; box-shadow: 0 8px 20px rgba(2, 32, 71, 0.15); padding: 16px; max-width: 1080px; margin: 0 auto; }
+.card h2 { margin: 0 0 12px 0; color: var(--blue-700); }
+.form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field.full { grid-column: 1 / -1; }
+.field label { font-size: 13px; color: var(--muted); }
+.field input, .field select { padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px; font-size: 14px; outline: none; }
+.field input:focus, .field select:focus { border-color: var(--blue-600); box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.15); }
+.actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.primary-button { background: var(--blue-600); color: #fff; border: none; padding: 10px 16px; border-radius: 10px; cursor: pointer; }
+.secondary-button { background: var(--blue-100); color: var(--blue-700); border: none; padding: 10px 16px; border-radius: 10px; cursor: pointer; }
+.danger-button { background: var(--danger); color: #fff; border: none; padding: 10px 16px; border-radius: 10px; cursor: pointer; }
+.success-button { background: var(--success); color: #fff; border: none; padding: 10px 16px; border-radius: 10px; cursor: pointer; }
+.scanner-container { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.scanner-container.hidden { display: none; }
+#scannerVideo { width: 100%; max-width: 520px; border-radius: 12px; box-shadow: 0 6px 16px rgba(0,0,0,0.2); background: #000; }
+.suggest { position: relative; }
+.suggest::after { content: ""; }
+.suggest-list { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 6px 16px rgba(0,0,0,0.12); z-index: 5; }
+.suggest-item { padding: 8px 12px; cursor: pointer; }
+.suggest-item:hover { background: var(--blue-100); color: var(--blue-700); }
+.toast { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); background: var(--blue-700); color: #fff; padding: 12px 16px; border-radius: 12px; box-shadow: 0 10px 24px rgba(0,0,0,0.2); z-index: 20; }
+.toast.hidden { display: none; }
+.note { margin-top: 10px; color: var(--muted); font-size: 13px; }
+@media (max-width: 720px) {
+  .form-grid { grid-template-columns: 1fr; }
+}
